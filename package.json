@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "This is a repository for a team semestral work for the subject *Advanced Technologies for Web Applications* (NSWI153).",
   "scripts": {
+    "lintFix": "npx eslint --fix src/",
+    "formatFix": "npx prettier --write src/",
+    "lintCheck": "npx eslint src/",
+    "formatCheck": "npx prettier --check src/"
   },
   "repository": {
     "type": "git",
@@ -28,5 +32,13 @@
   "bugs": {
     "url": "https://github.com/PatrikTrefil/web-crawler/issues"
   },
-  "homepage": "https://github.com/PatrikTrefil/web-crawler#readme"
+  "homepage": "https://github.com/PatrikTrefil/web-crawler#readme",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.15.0",
+    "@typescript-eslint/parser": "^5.15.0",
+    "eslint": "^8.11.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-react": "^7.29.4",
+    "prettier": "^2.6.0"
+  }
 }
