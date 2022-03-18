@@ -1,0 +1,32 @@
+{
+  "name": "web-crawler",
+  "version": "1.0.0",
+  "description": "This is a repository for a team semestral work for the subject *Advanced Technologies for Web Applications* (NSWI153).",
+  "scripts": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PatrikTrefil/web-crawler.git"
+  },
+  "keywords": [
+    "crawler"
+  ],
+  "contributors": [
+    {
+      "name": "Patrik Trefil",
+      "email": "patrik.trefil@gmail.com",
+      "url": "https://patriktrefil.com"
+    },
+    {
+      "name": "Zuzana Bohatová"
+    },
+    {
+      "name": "Milan Lamplot"
+    }
+  ],
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PatrikTrefil/web-crawler/issues"
+  },
+  "homepage": "https://github.com/PatrikTrefil/web-crawler#readme"
+}
