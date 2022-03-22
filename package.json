@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "This is a repository for a team semestral work for the subject *Advanced Technologies for Web Applications* (NSWI153).",
   "scripts": {
+    "build": "npx turbo run build",
+    "dev": "npx turbo run dev",
+    "test": "npx turbo run test",
+    "clean": "npx turbo run clean",
     "lintFix": "npx eslint --fix src/",
     "formatFix": "npx prettier --write src/",
     "lintCheck": "npx eslint src/",
