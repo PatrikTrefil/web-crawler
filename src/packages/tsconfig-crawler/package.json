@@ -1,0 +1,22 @@
+{
+  "name": "tsconfig-crawler",
+  "version": "1.0.0",
+  "description": "",
+  "contributors": [
+    {
+      "name": "Patrik Trefil",
+      "email": "patrik.trefil@gmail.com",
+      "url": "https://patriktrefil.com"
+    },
+    {
+      "name": "Zuzana Bohatová"
+    },
+    {
+      "name": "Milan Lamplot"
+    }
+  ],
+  "files": [
+    "tsconfig.json"
+  ],
+  "license": "ISC"
+}
