@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "build": "npx tsc",
-    "dev": "npx nodemon index.ts",
+    "dev": "npx nodemon ./src/index.ts",
     "clean": "git clean -fXd -e \\!node_modules -e \\!node_modules/**/*"
   },
   "keywords": [],
