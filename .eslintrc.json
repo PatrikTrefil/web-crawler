@@ -1,26 +1,18 @@
+// This is a base config for all subrepositories
 {
+  "$schema": "https://json.schemastore.org/eslintrc",
   "env": {
     "browser": true,
     "es2021": true,
     "node": true
   },
-  "extends": [
-    "eslint:recommended",
-    "plugin:react/recommended",
-    "plugin:@typescript-eslint/recommended",
-    "prettier"
-  ],
-  "parser": "@typescript-eslint/parser",
+  "extends": ["eslint:recommended", "prettier"],
   "parserOptions": {
-    "ecmaFeatures": {
-      "jsx": true
-    },
     "ecmaVersion": "latest",
     "sourceType": "module"
   },
-  "plugins": ["react", "@typescript-eslint"],
+  "plugins": [],
   "rules": {
     "linebreak-style": ["error", "unix"]
-  },
-  "ignorePatterns": ["**/dist/**"]
+  }
 }
