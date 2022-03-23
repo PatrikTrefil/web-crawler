@@ -1,11 +1,10 @@
-// This config extends ../../../.eslintrc.json
 {
   "$schema": "https://json.schemastore.org/eslintrc",
   "env": {
     "es2021": true,
     "node": true
   },
-  "extends": ["plugin:@typescript-eslint/recommended"],
+  "extends": ["plugin:@typescript-eslint/recommended", "crawler"],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": "latest",
