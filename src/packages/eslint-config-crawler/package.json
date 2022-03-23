@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "eslint-config-crawler",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "contributors": [
+    {
+      "name": "Patrik Trefil",
+      "email": "patrik.trefil@gmail.com",
+      "url": "https://patriktrefil.com"
+    },
+    {
+      "name": "Zuzana Bohatová"
+    },
+    {
+      "name": "Milan Lamplot"
+    }
+  ],
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^8.11.0",
+    "eslint-config-prettier": "^8.5.0"
+  }
+}
