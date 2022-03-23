@@ -16,7 +16,9 @@
     "dev": "npx react-scripts start",
     "build": "npx react-scripts build",
     "test": "npx react-scripts test",
-    "eject": "npx react-scripts eject"
+    "eject": "npx react-scripts eject",
+    "lintCheck": "npx eslint src/",
+    "lintFix": "npx eslint --fix src/"
   },
   "eslintConfig": {
     "extends": [
@@ -37,6 +39,7 @@
     ]
   },
   "devDependencies": {
+    "eslint-config-crawler": "^1.0.0",
     "eslint-plugin-jest": "^26.1.2"
   }
 }
