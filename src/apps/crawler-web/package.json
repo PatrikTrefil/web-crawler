@@ -20,12 +20,6 @@
     "lintCheck": "npx eslint src/",
     "lintFix": "npx eslint --fix src/"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
   "browserslist": {
     "production": [
       ">0.2%",
