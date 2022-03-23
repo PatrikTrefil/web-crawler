@@ -10,7 +10,8 @@
     "clean": "npx turbo run clean",
     "lintFix": "npx eslint --fix src/",
     "formatFix": "npx prettier --write src/",
-    "lintCheck": "npx eslint src/",
+    "lintFix": "npx turbo run lintFix",
+    "lintCheck": "npx turbo run lintCheck",
     "formatCheck": "npx prettier --check src/"
   },
   "repository": {
