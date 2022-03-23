@@ -8,7 +8,6 @@
     "dev": "npx turbo run dev",
     "test": "npx turbo run test",
     "clean": "npx turbo run clean",
-    "lintFix": "npx eslint --fix src/",
     "formatFix": "npx prettier --write src/",
     "lintFix": "npx turbo run lintFix",
     "lintCheck": "npx turbo run lintCheck",
@@ -40,14 +39,8 @@
   },
   "homepage": "https://github.com/PatrikTrefil/web-crawler#readme",
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.16.0",
-    "@typescript-eslint/parser": "^5.16.0",
-    "eslint": "^8.11.0",
-    "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-react": "^7.29.4",
     "prettier": "^2.6.0",
-    "turbo": "^1.1.9",
-    "typescript": "^4.6.2"
+    "turbo": "^1.1.9"
   },
   "workspaces": [
     "src/packages/*",
