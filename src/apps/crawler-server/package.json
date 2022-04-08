@@ -37,6 +37,7 @@
     "eslint-config-crawler": "^1.0.0",
     "nodemon": "^2.0.15",
     "ts-node": "^10.7.0",
+    "ts-types": "^1.0.0",
     "tsconfig-crawler": "^1.0.0",
     "typescript": "^4.6.2"
   }
