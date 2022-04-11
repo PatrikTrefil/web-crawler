@@ -21,7 +21,8 @@
   "scripts": {
     "dev": "npx react-scripts start",
     "build": "npx react-scripts build",
-    "test": "npx react-scripts test",
+    "test": "npx react-scripts test --watchAll=false",
+    "testWatch": "npx react-scripts test",
     "eject": "npx react-scripts eject",
     "lintCheck": "npx eslint src/",
     "lintFix": "npx eslint --fix src/"
