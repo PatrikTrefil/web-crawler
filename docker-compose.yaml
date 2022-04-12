@@ -9,3 +9,6 @@ services:
       ports:
         - 7474:7474
         - 7687:7687
+    # Uncomment the following lines to make the database data persistent
+    #   volumes:
+        # - ./neo4j_data:/data
