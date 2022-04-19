@@ -46,5 +46,8 @@
     "src/packages/*",
     "src/apps/*"
   ],
-  "packageManager": "npm@8.5.2"
+  "packageManager": "npm@8.5.2",
+  "engines": {
+    "npm": ">=7.0.0"
+  }
 }
