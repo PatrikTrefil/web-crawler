@@ -20,7 +20,3 @@ export interface IExecutionManager {
 
     getActiveExecutions(): Array<ICrawlExecution>
 }
-
-export interface IExecutor {
-    execution : ICrawlExecution
-}
