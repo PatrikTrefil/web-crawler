@@ -4,13 +4,19 @@
     "es2021": true,
     "node": true
   },
-  "extends": ["plugin:@typescript-eslint/recommended", "crawler"],
+  "extends": [
+    "crawler",
+    "plugin:@typescript-eslint/recommended"
+  ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": "latest",
     "sourceType": "module"
   },
   "plugins": ["@typescript-eslint"],
-  "rules": {},
+  "rules": {
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": ["error"]
+  },
   "ignorePatterns": "build/**"
 }
