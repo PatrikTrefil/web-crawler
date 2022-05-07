@@ -1,9 +1,15 @@
-import {IExecutor} from "./interfaces/execution-manager.model"
+import {IExecutor} from "./interfaces/execution-manager.model";
 import { ICrawlExecution, IWebsiteRecord } from "ts-types";
+import { parentPort } from 'worker_threads'
 import Apify from "apify";
 
 const { log } = Apify.utils;
 log.setLevel(log.LEVELS.DEBUG);
+
+parentPort.on('message', async data => {
+    const ex = new executor(data.execution, data.record);
+    await ex.startCrawling();
+})
 
 export class executor implements IExecutor
 {
