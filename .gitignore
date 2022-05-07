@@ -90,3 +90,6 @@ Thumbs.db
 
 # Turbo
 .turbo
+src/apps/crawler-server/apify_storage/request_queues/default/db.sqlite
+src/apps/crawler-server/apify_storage/request_queues/default/db.sqlite-shm
+src/apps/crawler-server/apify_storage/request_queues/default/db.sqlite-wal
