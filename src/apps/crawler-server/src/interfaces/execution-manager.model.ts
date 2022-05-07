@@ -9,14 +9,21 @@ export interface IExecutionManager {
     // Returns true if execution is successfully started
     startExecution(websiteRecord: IWebsiteRecord) : boolean
 
+    // When new execution was created, it's added to the system
+    newRecord(execution : IWebsiteRecord) : boolean
+
     // Removes all queued and active executions related to passed website record
     deleteWebsiteRecord(recordId: number): boolean,
 
     // Method to start function ExecutionManager
-    start() : null,
+    start() : void,
 
     // Returns array of queued executions
-    getQueuedExecutions(): Array<ICrawlExecution>
+    getQueuedRecords(): Array<IWebsiteRecord>
 
     getActiveExecutions(): Array<ICrawlExecution>
+}
+
+export interface IExecutor {
+    execution : ICrawlExecution
 }
