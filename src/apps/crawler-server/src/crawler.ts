@@ -9,9 +9,11 @@ log.setLevel(log.LEVELS.DEBUG);
 parentPort.on('message', async data => {
     const ex = new executor(data.execution, data.record);
     await ex.startCrawling();
+
+    parentPort.postMessage({execution: ex.execution, record: ex.record, date: Date.now()})
 })
 
-export class executor implements IExecutor
+class executor implements IExecutor
 {
     execution: ICrawlExecution
     record: IWebsiteRecord
