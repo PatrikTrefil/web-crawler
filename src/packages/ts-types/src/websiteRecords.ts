@@ -8,5 +8,5 @@ export interface IWebsiteRecord {
     label: string;
     isActive: boolean;
     tags: string[];
-    lastExecution: ICrawlExecution;
+    lastExecution: ICrawlExecution | null;
 }

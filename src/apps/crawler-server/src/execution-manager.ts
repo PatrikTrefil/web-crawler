@@ -13,6 +13,7 @@ export class executionManager implements IExecutionManager
 
     constructor()
     {
+        console.log('Creating new execution manager');
         this.recordQueue = new Array<IWebsiteRecord>()
         this.activeRecordExecutions = new Array<ExecutionRecord>()
 
@@ -21,9 +22,10 @@ export class executionManager implements IExecutionManager
         // Let's initialize array of workers, which will be used to start crawling for each execution
         for (let i = 0; i < this.maxConcurrentExecutions; i++)
         {
-            this.workers.push(new Worker('./crawler.ts'));
+            this.workers.push(new Worker('./src/crawler.ts'));
 
             // When they stop, they will send a message to crawlingFinished
+            console.log('Creating workers...')
             this.workers[i].on(
                 'message',
                 data => this.crawlingFinished(data.execution, data.record, data.timeFinished)
@@ -64,17 +66,17 @@ export class executionManager implements IExecutionManager
 
             // TODO: Implementation of ICrawlExecution
             const execution = new class implements ICrawlExecution {
-                crawlTime: { start: Date; end: Date };
-                links: [URL];
-                status: boolean = false;
-                title: string;
-                url: URL;
+                crawlTime = { start: new Date(Date.now()), end: new Date(Date.now()) };
+                links = [];
+                status = false;
+                title = 'idk';
+                url = record.url;
                 crawlTimeLengthInSeconds(): number {
                     return 0;
                 }
             }
 
-            this.activeRecordExecutions.push(new ExecutionRecord(execution , record));
+            this.activeRecordExecutions.push(new ExecutionRecord(execution, record));
         }
 
         // Remove them from enqueued executions
@@ -99,6 +101,32 @@ export class executionManager implements IExecutionManager
         }
     }
 
+    // Tries to sort waiting records based on their last execution time and periodicity
+    sortRecordQueue()
+    {
+        // Sort them by periodicity and last execution
+        this.recordQueue.sort((a, b) => {
+            if (a.lastExecution != null && b.lastExecution != null && a.periodicityInSeconds != null && b.periodicityInSeconds != null)
+            {
+                const atime = Date.now() - a.lastExecution.crawlTime.start.getDate() + a.periodicityInSeconds
+                const btime = Date.now() - a.lastExecution.crawlTime.start.getDate() + b.periodicityInSeconds
+
+                return atime - btime;
+            }
+            // We want a first
+            else if (a.lastExecution == null && b.lastExecution != null)
+            {
+                return -1;
+            }
+            else if (a.lastExecution != null && b.lastExecution == null)
+            {
+                return 1;
+            }
+
+            return 0;
+        })
+    }
+
     start() {
 
         // Load all website records from storage
@@ -107,8 +135,13 @@ export class executionManager implements IExecutionManager
 
         // Loop through them every minute to check if they need to be run
         // if so, enqueue them
-        this.addQueuedExecutions()
-        this.startQueuedExecutions()
+        this.addQueuedExecutions();
+
+        // Sort them
+        this.sortRecordQueue();
+
+        // Start them
+        this.startQueuedExecutions();
 
         // Run function every minute: https://stackoverflow.com/a/13304481
     }
@@ -118,6 +151,14 @@ export class executionManager implements IExecutionManager
         // TODO: Move execution from active to queue
         // TODO: Pass data to database
         console.error("not implemented... but crawlingFinished was called!");
+    }
+
+    newRecord(execution: IWebsiteRecord): boolean {
+        return false;
+    }
+
+    startExecution(websiteRecord: IWebsiteRecord): boolean {
+        return false;
     }
 }
 
