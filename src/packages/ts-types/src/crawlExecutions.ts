@@ -6,6 +6,6 @@ export interface ICrawlExecution {
     };
     crawlTimeLengthInSeconds(): number;
     title: string;
-    links: [URL];
+    links: URL[];
     status: boolean;
 }
