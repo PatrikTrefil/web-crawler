@@ -5,7 +5,7 @@
   "description": "",
   "scripts": {
     "build": "npx parcel build",
-    "dev": "npx nodemon src/index.js",
+    "dev": "npx nodemon src/index.ts",
     "clean": "git clean -fXd -e \\!node_modules -e \\!node_modules/**/*",
     "lintCheck": "npx eslint src/",
     "lintFix": "npx eslint --fix src/"
