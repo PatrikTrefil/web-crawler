@@ -28,7 +28,5 @@ services:
     restart: always
     build:
       dockerfile: ./src/apps/crawler-server/Dockerfile
-    # container_name: express-api
-    # hostname: express-api
     expose:
       - 4000
