@@ -1,6 +1,8 @@
+version: "3"
 services:
   neo4j:
     image: neo4j:4.0.4
+    restart: always
     environment:
       - NEO4J_AUTH=neo4j/password
     expose:
@@ -9,6 +11,24 @@ services:
     ports:
       - 7474:7474
       - 7687:7687
-    # Uncomment the following lines to make the database data persistent
-    #   volumes:
-    # - ./neo4j_data:/data
+  # Uncomment the following lines to make the database data persistent
+  #   volumes:
+  # - ./neo4j_data:/data
+  reverse_proxy:
+    depends_on:
+      - api
+    restart: always
+    build:
+      dockerfile: ./src/reverse-proxy/Dockerfile
+    ports:
+      - 8080:80
+  express-api:
+    depends_on:
+      - neo4j
+    restart: always
+    build:
+      dockerfile: ./src/apps/crawler-server/Dockerfile
+    # container_name: express-api
+    # hostname: express-api
+    expose:
+      - 4000
