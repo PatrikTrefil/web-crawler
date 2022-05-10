@@ -3,6 +3,9 @@
 # Tmp data
 neo4j_data/
 
+# Parcel cache
+**/.parcel-cache
+
 # compiled output
 dist/**
 build/**
