@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express, { NextFunction, Request, Response } from "express";
 const app = express();
 const port = 4000;
 
@@ -10,6 +10,16 @@ if (process.env.NODE_ENV === "production") {
     console.info = emptyFunc;
     console.debug = emptyFunc;
 }
+
+app.use(function logRequests(req: Request, _, next: NextFunction) {
+    console.info(
+        "[%s] %s - %s",
+        req.method,
+        req.url,
+        new Date(Date.now()).toISOString()
+    );
+    next();
+});
 
 const api = express.Router();
 app.use("/api", api);
