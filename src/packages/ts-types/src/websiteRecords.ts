@@ -8,5 +8,15 @@ export interface IWebsiteRecord {
     label: string;
     isActive: boolean;
     tags: string[];
-    lastExecution: ICrawlExecution;
+    lastExecutionId: string;
+}
+
+export interface IWebsiteRecordUpdate {
+    url?: string;
+    boundaryRegex?: string;
+    periodicityInSeconds?: number;
+    label?: string;
+    isActive?: boolean;
+    tags?: string[];
+    lastExecution?: ICrawlExecution;
 }
