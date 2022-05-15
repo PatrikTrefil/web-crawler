@@ -1,10 +1,11 @@
 version: "3"
 services:
   neo4j:
-    image: neo4j:4.0.4
+    build:
+      dockerfile: ./src/neo4j/Dockerfile
     restart: always
     environment:
-      - NEO4J_AUTH=neo4j/password
+      - NEO4J_AUTH=${NEO4J_AUTH}
     expose:
       - 7474
       - 7687
