@@ -18,5 +18,4 @@ export interface IWebsiteRecordUpdate {
     label?: string;
     isActive?: boolean;
     tags?: string[];
-    lastExecution?: ICrawlExecution;
 }
