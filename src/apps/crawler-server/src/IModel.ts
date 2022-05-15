@@ -22,8 +22,8 @@ export default interface IModel {
      * Creates a website record and returns the auto-generated id of the created record.
      */
     createRecord(
-        url: URL,
-        boundaryRegex: RegExp,
+        url: string,
+        boundaryRegex: string,
         label: string,
         isActive: boolean,
         tags: string[],
@@ -65,13 +65,10 @@ export default interface IModel {
      * @param crawlTime time of crawl execution on the web page
      * @returns auto-generated id of the execution
      * @throws "websiteRecordId not found" if a web page with websiteRecordId does not exist
-     * @throws "webPageId not found" if a web page with webPageId does not exist
-     * @throws "Item with websiteRecordId is not of type WebsiteRecord" if the type of the item with websiteRecordId doesn't have the type WebsiteRecord
-     * @throws "Item with webPageURL is not of type WebPage" if the type of the item with webPageURL doesn't have the type WebPage
      */
     createExecutionLink(
         websiteRecordId: string,
-        webPageURL: URL,
+        webPageURL: string,
         title: string,
         crawlTime: Date
     ): Promise<string>;
@@ -83,12 +80,10 @@ export default interface IModel {
      * @param title title of the target web page
      * @param crawlTime time of crawl execution on the web page
      * @param crawlExecutionId id of the crawl execution
-     * @throws "Webpage with fromWebPageURL not found"
-     * @throws "Webpage with toWebPageURL not found"
      */
     createLinkBetweenWebPages(
-        fromWebPageURL: URL,
-        toWebPageURL: URL,
+        fromWebPageURL: string,
+        toWebPageURL: string,
         title: string,
         crawlTime: Date,
         crawlExecutionId: string

@@ -1,11 +1,11 @@
 export interface IWebPage {
-    URL: URL;
+    URL: string;
     title?: string;
     crawlTime?: Date;
     links?: URL[];
 }
 
 export interface IWebPageLink {
-    sourceId: string;
-    destinationId: string;
+    sourceURL: string;
+    destinationURL: string;
 }

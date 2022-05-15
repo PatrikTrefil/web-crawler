@@ -2,8 +2,8 @@ import { ICrawlExecution } from "./crawlExecutions";
 
 export interface IWebsiteRecord {
     id: number;
-    url: URL;
-    boundaryRegex: RegExp;
+    url: string;
+    boundaryRegex: string;
     periodicityInSeconds?: number;
     label: string;
     isActive: boolean;

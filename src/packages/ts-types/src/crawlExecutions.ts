@@ -2,7 +2,7 @@ import { IWebPage, IWebPageLink } from "./webPages";
 
 export interface ICrawlExecution {
     id: string;
-    startURL: URL;
+    startURL: string;
     nodes: IWebPage[];
     edges: IWebPageLink[];
 }
