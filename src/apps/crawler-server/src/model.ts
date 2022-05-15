@@ -218,11 +218,9 @@ export default class Model implements IModel {
         let recordIds;
         try {
             const result = await session.run(
-                "MATCH (record:Record) RETURN record"
+                "MATCH (record:Record) RETURN record.id"
             );
-            recordIds = result.records.map(
-                (record) => record.get(0).properties.id
-            );
+            recordIds = result.records.map((record) => record.get("record.id"));
         } catch (e) {
             session.close();
             throw e;
