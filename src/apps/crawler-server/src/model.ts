@@ -43,7 +43,7 @@ export default class Model implements IModel {
                 let record: IWebsiteRecord | null = null;
                 if (recordResult.records.length > 0) {
                     const lastExecutionResult = await tx.run(
-                        "MATCH (record:Record { id: $id })-[lastExecution:Execution]-(:WebPage) RETURN lastExecution.id",
+                        "MATCH (record:Record { id: $id })-[lastExecution:Execution]-(:WebPage) RETURN lastExecution.id ORDER BY lastExecution.crawlTime LIMIT 1",
                         { id: id }
                     );
                     const lastExecutionId =
