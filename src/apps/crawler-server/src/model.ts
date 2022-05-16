@@ -59,9 +59,9 @@ export default class Model implements IModel {
                         url: resObj.url,
                         boundaryRegex: resObj.boundaryRegex,
                         label: resObj.label,
+                        periodicityInSeconds: resObj.periodicityInSeconds,
                         isActive: resObj.isActive,
                         tags: resObj.tags,
-                        periodicityInSeconds: resObj.periodicityInSeconds,
                         lastExecutionId: lastExecutionId,
                     };
                 }
@@ -81,7 +81,7 @@ export default class Model implements IModel {
         label: string,
         isActive: boolean,
         tags: string[],
-        periodicityInSeconds?: number
+        periodicityInSeconds = 0
     ): Promise<string> {
         const session = this.driver.session();
         const params: IWebsiteRecordUpdate = {
@@ -90,20 +90,16 @@ export default class Model implements IModel {
             label: label,
             isActive: isActive,
             tags: tags,
+            periodicityInSeconds: periodicityInSeconds,
         };
-        if (periodicityInSeconds)
-            params.periodicityInSeconds = periodicityInSeconds;
         let createdRecordId;
         try {
             const result = await session.run(
                 `CREATE (record:Record {
                     id: apoc.create.uuid(),
                     url: $url,
-                    boundaryRegex: $boundaryRegex${
-                        params.periodicityInSeconds
-                            ? ", periodicityInSeconds: $periodicityInSeconds"
-                            : ""
-                    },
+                    boundaryRegex: $boundaryRegex,
+                    periodicityInSeconds: $periodicityInSeconds,
                     label: $label,
                     isActive: $isActive,
                     tags: $tags })
