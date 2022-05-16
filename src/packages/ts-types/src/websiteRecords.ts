@@ -1,10 +1,10 @@
 import { ICrawlExecution } from "./crawlExecutions";
 
 export interface IWebsiteRecord {
-    id: number;
+    id: string;
     url: string;
     boundaryRegex: string;
-    periodicityInSeconds?: number;
+    periodicityInSeconds: number; // 0 means no automatic repetition
     label: string;
     isActive: boolean;
     tags: string[];
