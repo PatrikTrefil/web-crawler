@@ -177,7 +177,7 @@ components:
           description: Crawl periodicity in seconds (value 0 implies no automatic repetition).
         label:
           type: string
-          description: Human readable label of the website record.
+          description: Human readable label of the website record (non-empty string).
         isActive:
           type: boolean
           description: Boolean indication whether the website record is active.
@@ -186,6 +186,7 @@ components:
           description: Array of tags of the website record.
           items:
             type: string
+            description: Non-empty string
             example: "books"
         lastExecutionURL:
           type: string
@@ -205,7 +206,7 @@ components:
           description: Crawl periodicity in seconds (setting this to 0 implies no automatic repetition).
         label:
           type: string
-          description: Human readable label of the website record.
+          description: Human readable label of the website record (non-empty string).
         isActive:
           type: boolean
           description: Boolean indication whether the website record is active.
@@ -214,6 +215,7 @@ components:
           description: Array of tags of the website record.
           items:
             type: string
+            description: Non-empty string
             example: "books"
         lastExecutionURL:
           type: string
