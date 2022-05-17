@@ -440,7 +440,7 @@ export default class Model implements IModel {
             );
             const crawledPages = crawledPagesResult.records.map((record) => {
                 const webPage: IWebPage = {
-                    URL: record.get("webPage").properties.url,
+                    url: record.get("webPage").properties.url,
                 };
                 const title = record.get("link").properties.title;
                 if (title !== null) webPage.title = title;
@@ -461,7 +461,7 @@ export default class Model implements IModel {
             const uncrawledPages = uncrawledPagesResult.records.map(
                 (record) => {
                     return {
-                        URL: record.get("webPage").properties.url,
+                        url: record.get("webPage").properties.url,
                     };
                 }
             );

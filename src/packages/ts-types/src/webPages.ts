@@ -1,8 +1,8 @@
 export interface IWebPage {
-    URL: string;
+    url: string;
     title?: string;
     crawlTime?: Date;
-    links?: URL[];
+    links?: string[];
 }
 
 export interface IWebPageLink {

@@ -1,7 +1,7 @@
 import { ICrawlExecution } from "./crawlExecutions";
 
 export interface IWebsiteRecord {
-    id: number;
+    id: string;
     url: string;
     boundaryRegex: string;
     periodicityInSeconds?: number;
