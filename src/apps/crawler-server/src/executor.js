@@ -66,6 +66,65 @@ class Executor {
         );
     }
     async crawl(record) {
+        const crawlExecution = {
+            recordId: record.id,
+            url: record.url,
+            links: [],
+        };
+        const requestQueue = await Apify.openRequestQueue(
+            // every thread needs its own queue
+            // we add queueCounter to the name, because we otherwise get an error: "Database connection is not open" (might be intentional or a bug)
+            worker_threads.threadId.toString() + this.queueCounter++
+        );
+        await requestQueue.addRequest({ url: record.url });
+
+        const handlePageFunction = async ({ request, $ }) => {
+            // Extract desired data from site
+            const title = $("title").text();
+            console.log(`The title of "${request.url}" is: ${title}.`);
+
+            // Enqueue links
+            const absoluteAndRelativeUrls = $("a[href]")
+                .map((i, el) => $(el).attr("href"))
+                .get();
+            const absoluteUrls = absoluteAndRelativeUrls.map((link) =>
+                new URL(link, request.loadedUrl).toString()
+            );
+            const link = {
+                fromWebPageURL: request.userData.fromWebPageURL ?? null, // null will be assigned only for start page
+                toWebPageURL: request.url,
+                title: title,
+                crawlTime: new Date(),
+            };
+            crawlExecution.links.push(link);
+            const boundaryRegex = new RegExp(record.boundaryRegex);
+            for (const url of absoluteUrls)
+                if (boundaryRegex.test(url)) {
+                    console.log("Enque: " + url);
+                    await requestQueue.addRequest({
+                        url: url,
+                        userData: { fromWebPageURL: request.url },
+                    });
+                } else {
+                    // make note of link going out of bounds (without crawled data)
+                    crawlExecution.links.push({
+                        fromWebPageURL: request.url,
+                        toWebPageURL: url,
+                        crawlTime: new Date(),
+                    });
+                }
+        };
+
+        const crawler = new Apify.CheerioCrawler({
+            maxRequestsPerCrawl: 20,
+            requestQueue,
+            handlePageFunction,
+        });
+
+        await crawler.run();
+        requestQueue.drop();
+        return crawlExecution;
+    }
 }
 console.log("[Thread %s] started", worker_threads.threadId);
 const executor = new Executor();
