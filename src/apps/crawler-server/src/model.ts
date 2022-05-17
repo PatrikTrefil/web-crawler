@@ -316,7 +316,7 @@ export default class Model implements IModel {
                 const result = await tx.run(
                     `MATCH (fromWebPage:WebPage { url: $fromWebPageURL }), (toWebPage:WebPage { url: $toWebPageURL })
                     MERGE (fromWebPage)-[e:Link {
-                        title : $title,
+                        ${title ? "title : $title," : ""}
                         crawlTime : $crawlTime,
                         crawlExecutionId : $crawlExecutionId,
                         id : apoc.create.uuid()
