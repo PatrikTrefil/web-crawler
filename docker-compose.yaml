@@ -31,3 +31,16 @@ services:
       dockerfile: ./src/apps/crawler-server/Dockerfile
     expose:
       - 4000
+  work-queue:
+    restart: always
+    image: rabbitmq:3-management
+    hostname: work-queue
+    # data is saved to a volume by default
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+    expose:
+      - 5672
+      - 15672
+    ports:
+      - 15672:15672 # RabbitMQ monitoring, TODO: pass through nginx
