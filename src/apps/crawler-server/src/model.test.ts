@@ -138,12 +138,12 @@ test("create execution with periodicity in seconds", async () => {
         startURL: "http://google.com",
         nodes: [
             {
-                URL: "http://google.com",
+                url: "http://google.com",
                 title: "Google",
                 crawlTime: new Date("2020-01-01"),
             },
             {
-                URL: "http://amazon.com",
+                url: "http://amazon.com",
                 title: "Amazon",
                 crawlTime: new Date("2020-01-01"),
             },
@@ -209,12 +209,12 @@ test("create execution without setting periodicity", async () => {
         startURL: "http://youtube.com",
         nodes: [
             {
-                URL: "http://youtube.com",
+                url: "http://youtube.com",
                 title: "Youtube",
                 crawlTime: new Date("2020-01-01"),
             },
             {
-                URL: "http://amazon.com",
+                url: "http://amazon.com",
                 title: "Amazon",
                 crawlTime: new Date("2020-01-01"),
             },
