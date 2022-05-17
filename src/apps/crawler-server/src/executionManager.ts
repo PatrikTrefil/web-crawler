@@ -3,7 +3,6 @@ import "dotenv/config";
 import amqp from "amqplib/callback_api";
 import { Worker } from "worker_threads";
 import IModel from "./IModel";
-import Model from "./model";
 import { ToadScheduler, SimpleIntervalJob, Task } from "toad-scheduler";
 import { IWebsiteRecord } from "ts-types";
 
