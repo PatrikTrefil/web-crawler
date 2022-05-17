@@ -312,7 +312,7 @@ export default class Model implements IModel {
                 const result = await tx.run(
                     `MATCH (fromWebPage:WebPage { url: $fromWebPageURL }), (toWebPage:WebPage { url: $toWebPageURL })
                     MERGE (fromWebPage)-[e:Link {
-                        title : $title,
+                        ${title ? "title : $title," : ""}
                         crawlTime : $crawlTime,
                         crawlExecutionId : $crawlExecutionId,
                         id : apoc.create.uuid()
@@ -436,7 +436,7 @@ export default class Model implements IModel {
             );
             const crawledPages = crawledPagesResult.records.map((record) => {
                 const webPage: IWebPage = {
-                    URL: record.get("webPage").properties.url,
+                    url: record.get("webPage").properties.url,
                 };
                 const title = record.get("link").properties.title;
                 if (title !== null) webPage.title = title;
@@ -457,7 +457,7 @@ export default class Model implements IModel {
             const uncrawledPages = uncrawledPagesResult.records.map(
                 (record) => {
                     return {
-                        URL: record.get("webPage").properties.url,
+                        url: record.get("webPage").properties.url,
                     };
                 }
             );
