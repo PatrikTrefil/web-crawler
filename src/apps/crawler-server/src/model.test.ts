@@ -156,19 +156,20 @@ test("create execution with periodicity in seconds", async () => {
         ],
     };
     const execution = await model.getExecution(executionId);
+    if (execution === null) throw "Created execution not found;";
     await model.dispose();
     // converting arrays to sets for comparison ignoring order of elements
     const setExecution = {
-        id: execution!.id,
-        startURL: execution!.startURL,
-        nodes: new Set(execution!.nodes),
-        edges: new Set(execution!.edges),
+        id: execution.id,
+        startURL: execution.startURL,
+        nodes: new Set(execution.nodes),
+        edges: new Set(execution.edges),
     };
     const expectedSetExecution = {
-        id: expectedExecution!.id,
-        startURL: expectedExecution!.startURL,
-        nodes: new Set(expectedExecution!.nodes),
-        edges: new Set(expectedExecution!.edges),
+        id: expectedExecution.id,
+        startURL: expectedExecution.startURL,
+        nodes: new Set(expectedExecution.nodes),
+        edges: new Set(expectedExecution.edges),
     };
     expect(setExecution).toStrictEqual(expectedSetExecution);
 });
@@ -228,18 +229,19 @@ test("create execution without setting periodicity", async () => {
     };
     const execution = await model.getExecution(executionId);
     await model.dispose();
+    if (execution === null) throw "Created execution not found;";
     // converting arrays to sets for comparison ignoring order of elements
     const setExecution = {
-        id: execution!.id,
-        startURL: execution!.startURL,
-        nodes: new Set(execution!.nodes),
-        edges: new Set(execution!.edges),
+        id: execution.id,
+        startURL: execution.startURL,
+        nodes: new Set(execution.nodes),
+        edges: new Set(execution.edges),
     };
     const expectedSetExecution = {
-        id: expectedExecution!.id,
-        startURL: expectedExecution!.startURL,
-        nodes: new Set(expectedExecution!.nodes),
-        edges: new Set(expectedExecution!.edges),
+        id: expectedExecution.id,
+        startURL: expectedExecution.startURL,
+        nodes: new Set(expectedExecution.nodes),
+        edges: new Set(expectedExecution.edges),
     };
     expect(setExecution).toStrictEqual(expectedSetExecution);
 });

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import IExecutionManager from "./IExecutionManager";
 import "dotenv/config";
 import amqp from "amqplib/callback_api";
@@ -6,6 +7,18 @@ import IModel from "./IModel";
 import Model from "./model";
 import { ToadScheduler, SimpleIntervalJob, Task } from "toad-scheduler";
 import { IWebsiteRecord } from "ts-types";
+
+type LinkData = {
+    fromWebPageURL: string,
+    toWebPageURL: string,
+    title: string,
+    crawlTime: Date
+}
+type ExecutionData = {
+    recordId: string,
+    url: string,
+    links: LinkData[]
+}
 
 export default class ExecutionManager implements IExecutionManager {
     private workers: Worker[];
@@ -20,7 +33,7 @@ export default class ExecutionManager implements IExecutionManager {
             this.workers[i].on("exit", (code) => {
                 if (code !== 0) throw "Worker exited with code " + code;
             });
-            this.workers[i].on("message", async (data) => {
+            this.workers[i].on("message", async (data: ExecutionData) => {
                 console.log("Data received in execution manager");
                 console.log(data);
                 const record = await this.model.getRecordById(data.recordId);
@@ -28,13 +41,13 @@ export default class ExecutionManager implements IExecutionManager {
                     if (record?.lastExecutionId !== null)
                         this.model.deleteExecution(record.lastExecutionId);
                     const recordWebPageLink = data.links.find(
-                        (link: any) => link.fromWebPageURL === null
+                        (link) => link.fromWebPageURL === null
                     );
                     const executionId = await this.model.createExecutionLink(
                         data.recordId,
-                        recordWebPageLink.toWebPageURL,
-                        recordWebPageLink.title,
-                        recordWebPageLink.crawlTime
+                        recordWebPageLink!.toWebPageURL,
+                        recordWebPageLink!.title,
+                        recordWebPageLink!.crawlTime
                     );
                     for (const link of data.links) {
                         if (link.fromWebPageURL !== null)

@@ -92,6 +92,7 @@ api.get(
                 // check
                 records.every((item) => (req.query.sortBy as string) in item);
                 // sort
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 records.sort((item) => item[req.query.sortBy]);
             }
@@ -221,7 +222,7 @@ app.listen(port, () => {
     console.log(`crawler-server listening on port ${port}`);
 });
 
-function regexValidator(value: any) {
+function regexValidator(value: string) {
     try {
         new RegExp(value);
     } catch (e) {
