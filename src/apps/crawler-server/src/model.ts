@@ -3,10 +3,9 @@ import {
     IWebsiteRecord,
     IWebsiteRecordUpdate,
     IWebPage,
-    IWebPageLink,
 } from "ts-types";
 import IModel from "./IModel";
-import neo4j, { Driver, Transaction } from "neo4j-driver";
+import neo4j, { Driver, Transaction, DateTime } from "neo4j-driver";
 import "dotenv/config";
 
 export default class Model implements IModel {
@@ -303,12 +302,26 @@ export default class Model implements IModel {
     public async createLinkBetweenWebPages(
         fromWebPageURL: string,
         toWebPageURL: string,
-        title: string,
-        crawlTime: Date,
+        title: string | undefined,
+        crawlTime: Date | undefined,
         crawlExecutionId: string
     ): Promise<string> {
         const session = this.driver.session();
         let createdLinkId;
+        const params: {
+            fromWebPageURL: string;
+            toWebPageURL: string;
+            crawlExecutionId: string;
+            title?: string;
+            crawlTime?: DateTime<number>;
+        } = {
+            fromWebPageURL: fromWebPageURL,
+            toWebPageURL: toWebPageURL,
+            crawlExecutionId: crawlExecutionId,
+        };
+        if (title) params.title = title;
+        if (crawlTime)
+            params.crawlTime = neo4j.types.DateTime.fromStandardDate(crawlTime);
         try {
             createdLinkId = await session.writeTransaction(async (tx) => {
                 await this.createWebPage(fromWebPageURL, tx);
@@ -317,19 +330,12 @@ export default class Model implements IModel {
                     `MATCH (fromWebPage:WebPage { url: $fromWebPageURL }), (toWebPage:WebPage { url: $toWebPageURL })
                     MERGE (fromWebPage)-[e:Link {
                         ${title ? "title : $title," : ""}
-                        crawlTime : $crawlTime,
+                        ${crawlTime ? "crawlTime : $crawlTime," : ""}
                         crawlExecutionId : $crawlExecutionId,
                         id : apoc.create.uuid()
                     }]->(toWebPage)
                     RETURN e.id`,
-                    {
-                        fromWebPageURL: fromWebPageURL,
-                        toWebPageURL: toWebPageURL,
-                        title: title,
-                        crawlTime:
-                            neo4j.types.DateTime.fromStandardDate(crawlTime),
-                        crawlExecutionId: crawlExecutionId,
-                    }
+                    params
                 );
                 if (result.records.length > 0)
                     return result.records[0].get("e.id");

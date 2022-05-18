@@ -75,6 +75,7 @@ export default interface IModel {
 
     /**
      * link two webpages together (directed relationship) if the link does not exist
+     * if the toWebPageURL was not crawled, do not provide title and crawlTime
      * @param fromWebPageURL id of the webpage (crawled or uncrawled) from which the link is coming
      * @param toWebPageURL id of the webpage to which the link is going
      * @param title title of the target web page
@@ -84,8 +85,8 @@ export default interface IModel {
     createLinkBetweenWebPages(
         fromWebPageURL: string,
         toWebPageURL: string,
-        title: string,
-        crawlTime: Date,
+        title: string | undefined,
+        crawlTime: Date | undefined,
         crawlExecutionId: string
     ): Promise<string>;
 
