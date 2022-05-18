@@ -27,7 +27,7 @@ export default interface IModel {
         label: string,
         isActive: boolean,
         tags: string[],
-        periodicityInSeconds?: number
+        periodicityInSeconds: number
     ): Promise<string>;
 
     /**

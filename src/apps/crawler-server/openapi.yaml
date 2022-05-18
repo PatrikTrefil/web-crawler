@@ -10,7 +10,7 @@ servers:
 paths:
   /records:
     get:
-      summary: Returns a list of user identifications (limit 100).
+      summary: Returns a list of user identifications.
       parameters:
         - in: query
           name: sortBy
@@ -18,16 +18,16 @@ paths:
           schema:
             type: string
             # ENUM?
-        - in: query
-          name: limit
-          description: Maximum number of items in result (max 100; default = 100).
-          schema:
-            type: integer
-        - in: query
-          name: offset
-          description: Offset from the beginning of the data (sorted based on sortBy parameter; default = 0).
-          schema:
-            type: integer
+        # - in: query
+        #   name: limit
+        #   description: Maximum number of items in result (max 100; default = 100).
+        #   schema:
+        #     type: integer
+        # - in: query
+        #   name: offset
+        #   description: Offset from the beginning of the data (sorted based on sortBy parameter; default = 0).
+        #   schema:
+        #     type: integer
         - in: query
           name: filterByURL
           description: URL to filter by (exact match required).
@@ -52,34 +52,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  totalCount:
-                    type: integer
-                    description: Total count of the website records.
-                    example: 100
+                  # totalCount:
+                  #   type: integer
+                  #   description: Total count of the website records.
+                  #   example: 120
                   data:
                     type: array
-                    description: Requested array of website records.
+                    description: Requested array of website record ids.
                     items: { $ref: "#/components/schemas/websiteRecord" }
-
-  /records/{recordId}:
-    get:
-      summary: Returns an object describing a website record with given recordId.
-      parameters:
-        - in: path
-          name: recordId
-          required: true
-          description: Website record identification.
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/websiteRecord"
-        "404":
-          description: Not found.
+  /records/{recordId}/create:
     post:
       summary: Create a new website record
       parameters:
@@ -88,7 +69,8 @@ paths:
           required: true
           description: Website record identification.
           schema:
-            type: integer
+            type: string
+            format: uuid
       requestBody:
         required: true
         content:
@@ -98,6 +80,34 @@ paths:
       responses:
         "201":
           description: "Website record created"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  recordId:
+                    type: string
+                    description: ID of the new website record.
+  /records/{recordId}:
+    get:
+      summary: Returns an object describing a website record with given recordId.
+      parameters:
+        - in: path
+          name: recordId
+          required: true
+          description: Website record identification.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/websiteRecord"
+        "404":
+          description: Not found.
     put:
       summary: Update website record data with given request body.
       parameters:
@@ -106,7 +116,8 @@ paths:
           required: true
           description: Website record identification.
           schema:
-            type: integer
+            type: string
+            format: uuid
       requestBody:
         required: true
         content:
@@ -116,6 +127,8 @@ paths:
       responses:
         "204":
           description: Website record updated.
+        "404":
+          description: Website record with given recordId not found.
     delete:
       summary: Delete website record with given recordId.
       parameters:
@@ -124,7 +137,8 @@ paths:
           required: true
           description: Website record identification.
           schema:
-            type: integer
+            type: string
+            format: uuid
       responses:
         "204":
           description: Website record deleted.
@@ -137,23 +151,54 @@ paths:
         - in: path
           name: recordId
           required: true
-          descriptiion: Website record identification
+          description: Website record identification
           schema:
-            type: integer
+            type: string
+            format: uuid
       responses:
         "202":
           description: The crawl will start as soon as possible.
         "404":
           description: Not found.
+  /crawls/{crawlId}:
+    get:
+      summary: Get a crawl with given crawlId
+      parameters:
+        - in: path
+          name: crawlId
+          required: true
+          description: Crawl identifier
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/crawl"
 
 components:
   schemas:
     websiteRecord:
       type: object
+      required:
+        [
+          id,
+          url,
+          boundaryRegex,
+          periodicityInSeconds,
+          label,
+          isActive,
+          tags,
+          lastExecutionId,
+        ]
       properties:
         id:
           example: 123
-          type: integer
+          type: string
+          format: uuid
           description: Unique identifier of the website record.
         url:
           type: string
@@ -163,10 +208,10 @@ components:
           description: Regular expression describing the website domain's to crawl.
         periodicityInSeconds:
           type: integer
-          description: Crawl periodicity in seconds.
+          description: Crawl periodicity in seconds (value 0 implies no automatic repetition).
         label:
           type: string
-          description: Human readable label of the website record.
+          description: Human readable label of the website record (non-empty string).
         isActive:
           type: boolean
           description: Boolean indication whether the website record is active.
@@ -175,10 +220,11 @@ components:
           description: Array of tags of the website record.
           items:
             type: string
+            description: Non-empty string
             example: "books"
-        lastExecutionURL:
+        lastExecutionId:
           type: string
-          description: URL of the last execution of the crawl described in the website record.
+          description: Id of the last execution of the crawl described in the website record.
     # schema for representing creation or update of a website record
     websiteRecordChange:
       type: object
@@ -191,10 +237,10 @@ components:
           description: Regular expression describing the website domain's to crawl.
         periodicityInSeconds:
           type: integer
-          description: Crawl periodicity in seconds.
+          description: Crawl periodicity in seconds (setting this to 0 implies no automatic repetition).
         label:
           type: string
-          description: Human readable label of the website record.
+          description: Human readable label of the website record (non-empty string).
         isActive:
           type: boolean
           description: Boolean indication whether the website record is active.
@@ -203,7 +249,34 @@ components:
           description: Array of tags of the website record.
           items:
             type: string
+            description: Non-empty string
             example: "books"
         lastExecutionURL:
           type: string
           description: URL of the last execution of the crawl described in the website record.
+    crawl:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        startURL:
+          type: string
+        nodes:
+          type: array
+          items:
+            type: object
+            required: ["url", "links"]
+            properties:
+              url:
+                type: string
+              title:
+                type: string
+              crawlTime:
+                type: string
+                format: date-time
+              links:
+                type: array
+                items:
+                  type: string
+                  description: URL of target node.

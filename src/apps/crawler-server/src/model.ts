@@ -58,9 +58,9 @@ export default class Model implements IModel {
                         url: resObj.url,
                         boundaryRegex: resObj.boundaryRegex,
                         label: resObj.label,
+                        periodicityInSeconds: resObj.periodicityInSeconds,
                         isActive: resObj.isActive,
                         tags: resObj.tags,
-                        periodicityInSeconds: resObj.periodicityInSeconds,
                         lastExecutionId: lastExecutionId,
                     };
                 }
@@ -80,7 +80,7 @@ export default class Model implements IModel {
         label: string,
         isActive: boolean,
         tags: string[],
-        periodicityInSeconds?: number
+        periodicityInSeconds = 0
     ): Promise<string> {
         const session = this.driver.session();
         const params: IWebsiteRecordUpdate = {
@@ -89,20 +89,16 @@ export default class Model implements IModel {
             label: label,
             isActive: isActive,
             tags: tags,
+            periodicityInSeconds: periodicityInSeconds,
         };
-        if (periodicityInSeconds)
-            params.periodicityInSeconds = periodicityInSeconds;
         let createdRecordId;
         try {
             const result = await session.run(
                 `CREATE (record:Record {
                     id: apoc.create.uuid(),
                     url: $url,
-                    boundaryRegex: $boundaryRegex${
-                        params.periodicityInSeconds
-                            ? ", periodicityInSeconds: $periodicityInSeconds"
-                            : ""
-                    },
+                    boundaryRegex: $boundaryRegex,
+                    periodicityInSeconds: $periodicityInSeconds,
                     label: $label,
                     isActive: $isActive,
                     tags: $tags })
@@ -429,8 +425,9 @@ export default class Model implements IModel {
             const crawledPagesResult = await session.run(
                 `MATCH (fromNode)-[link:Link { crawlExecutionId: $crawlExecutionId }]->(toWebPage)
                  WHERE (fromNode:Record OR fromNode:WebPage) AND link.crawlTime IS NOT NULL AND link.title IS NOT NULL
-                 RETURN link, toWebPage as webPage
-                `,
+                 WITH link as linkToWebPage, toWebPage as webPage
+                 MATCH (webPage)-[:Link { crawlExecutionId: $crawlExecutionId }]->(toWebPage)
+                 RETURN linkToWebPage, webPage, collect(toWebPage) as linksOutOfWebPage`,
                 {
                     crawlExecutionId: crawlExecutionId,
                 }
@@ -448,21 +445,24 @@ export default class Model implements IModel {
                     crawlExecutionId: crawlExecutionId,
                 }
             );
-            const linksResult = await session.run(
-                `MATCH (fromWebPage:WebPage)-[link:Link { crawlExecutionId: $crawlExecutionId }]->(toWebPage:WebPage)
-                 RETURN DISTINCT fromWebPage, link, toWebPage`,
-                {
-                    crawlExecutionId: crawlExecutionId,
-                }
-            );
             const crawledPages = crawledPagesResult.records.map((record) => {
                 const webPage: IWebPage = {
                     url: record.get("webPage").properties.url,
+                    links: record.get("linksOutOfWebPage").map(
+                        (linkRes: {
+                            properties: {
+                                url: string;
+                            };
+                        }) => {
+                            return linkRes.properties.url;
+                        }
+                    ),
                 };
-                const title = record.get("link").properties.title;
-                if (title !== null) webPage.title = title;
+                const linkToWebPage = record.get("linkToWebPage").properties;
+                const title = linkToWebPage.title;
+                webPage.title = title;
                 const { year, month, day, hour, minute, second, nanosecond } =
-                    record.get("link").properties.crawlTime;
+                    linkToWebPage.crawlTime;
                 const crawlTime = new Date(
                     year.toInt(),
                     month.toInt() - 1,
@@ -472,7 +472,7 @@ export default class Model implements IModel {
                     second.toInt(),
                     nanosecond.toInt() / 1000000
                 );
-                if (crawlTime !== null) webPage.crawlTime = crawlTime;
+                webPage.crawlTime = crawlTime;
                 return webPage;
             });
             const uncrawledPages = uncrawledPagesResult.records.map(
@@ -486,13 +486,6 @@ export default class Model implements IModel {
                 id: crawlExecutionId,
                 nodes: [...crawledPages, ...uncrawledPages],
                 startURL: startURLResult.records[0].get("webPage.url"),
-                edges: linksResult.records.map((record) => {
-                    const link: IWebPageLink = {
-                        sourceURL: record.get("fromWebPage").properties.url,
-                        destinationURL: record.get("toWebPage").properties.url,
-                    };
-                    return link;
-                }),
             };
         } catch (e) {
             session.close();

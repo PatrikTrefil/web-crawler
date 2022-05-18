@@ -1,3 +1,4 @@
+# SET ALL REQUIRED ENV VARIABLES TO RUN THIS APP
 version: "3"
 services:
   neo4j:
@@ -23,6 +24,7 @@ services:
   express-api:
     depends_on:
       - neo4j
+      - work-queue
     restart: always
     environment:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}

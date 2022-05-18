@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import IExecutionManager from "./IExecutionManager";
 import "dotenv/config";
 import amqp from "amqplib/callback_api";
@@ -44,9 +45,9 @@ export default class ExecutionManager implements IExecutionManager {
                     if (!recordWebPageLink) throw "Record not found";
                     const executionId = await this.model.createExecutionLink(
                         data.recordId,
-                        recordWebPageLink.toWebPageURL,
-                        recordWebPageLink.title,
-                        recordWebPageLink.crawlTime
+                        recordWebPageLink!.toWebPageURL,
+                        recordWebPageLink!.title,
+                        recordWebPageLink!.crawlTime
                     );
                     for (const link of data.links) {
                         if (link.fromWebPageURL !== null)
@@ -118,5 +119,13 @@ export default class ExecutionManager implements IExecutionManager {
             record.id
         );
         this.scheduler.addSimpleIntervalJob(job);
+    }
+    async startExecutionsForAllActiveRecords() {
+        const recordIds = await this.model.getRecordIds();
+        for (const recordId of recordIds) {
+            const record = await this.model.getRecordById(recordId);
+            if (record !== null && record.isActive)
+                this.planExecutionOfRecord(record);
+        }
     }
 }
