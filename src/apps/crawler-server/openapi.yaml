@@ -222,9 +222,9 @@ components:
             type: string
             description: Non-empty string
             example: "books"
-        lastExecutionURL:
+        lastExecutionId:
           type: string
-          description: URL of the last execution of the crawl described in the website record.
+          description: Id of the last execution of the crawl described in the website record.
     # schema for representing creation or update of a website record
     websiteRecordChange:
       type: object
