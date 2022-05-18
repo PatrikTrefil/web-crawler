@@ -24,6 +24,13 @@ services:
     depends_on:
       - neo4j
     restart: always
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_HOSTNAME=work-queue
+      - RABBITMQ_PORT=5672
+      - NEO4J_URL=${NEO4J_URL}
+      - CRAWLER_WORKER_COUNT=${CRAWLER_WORKER_COUNT}
     build:
       dockerfile: ./src/apps/crawler-server/Dockerfile
     expose:

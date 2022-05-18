@@ -52,7 +52,7 @@ export default class ExecutionManager implements IExecutionManager {
     enqueueCrawl(record: IWebsiteRecord) {
         // send to work queue
         amqp.connect(
-            `amqp://${process.env.RABBITMQ_DEFAULT_USER}:${process.env.RABBITMQ_DEFAULT_PASS}@work-queue:5672`,
+            `amqp://${process.env.RABBITMQ_DEFAULT_USER}:${process.env.RABBITMQ_DEFAULT_PASS}@${process.env.RABBITMQ_HOSTNAME}:${process.env.RABBITMQ_PORT}`,
             (error0, connection) => {
                 if (error0) throw error0;
                 connection.createChannel(async (error1, channel) => {
