@@ -4,11 +4,11 @@
 apify_storage/
 
 # Parcel cache
-**/.parcel-cache
+.parcel-cache/
 
 # compiled output
-dist/**
-build/**
+dist/
+build/
 /tmp
 /out-tsc
 
