@@ -183,6 +183,17 @@ components:
   schemas:
     websiteRecord:
       type: object
+      required:
+        [
+          id,
+          url,
+          boundaryRegex,
+          periodicityInSeconds,
+          label,
+          isActive,
+          tags,
+          lastExecutionId,
+        ]
       properties:
         id:
           example: 123
