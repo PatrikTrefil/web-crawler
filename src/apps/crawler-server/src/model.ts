@@ -205,8 +205,19 @@ export default class Model implements IModel {
         const session = this.driver.session();
         let nodesDeletedCount;
         try {
+            // delete all executions based on the record with given id
+            const resultExecutions = await session.run(
+                `MATCH (record:Record { id: $id })-[exec:Execution]->()
+                 RETURN exec.id`,
+                { id: id }
+            );
+            for (const record of resultExecutions.records) {
+                const executionId = record.get("exec.id");
+                await this.deleteExecution(executionId);
+            }
+            // now we delete the record
             const result = await session.run(
-                "MATCH (record:Record { id: $id }) DETACH DELETE record",
+                `MATCH (record:Record { id: $id }) DETACH DELETE record`,
                 { id: id }
             );
             nodesDeletedCount =
