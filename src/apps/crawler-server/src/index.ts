@@ -1,10 +1,20 @@
 import express, { NextFunction, Request, Response } from "express";
 import { body, check, validationResult, query } from "express-validator";
+import ExecutionManager from "./executionManager";
 import Model from "./model";
+import "dotenv/config";
+import { IWebsiteRecordUpdate } from "ts-types";
 
 const app = express();
 const port = 4000;
 const model = new Model();
+const executionManager = new ExecutionManager(
+    process.env.CRAWLER_WORKER_COUNT
+        ? parseInt(process.env.CRAWLER_WORKER_COUNT)
+        : 1,
+    model
+);
+executionManager.startExecutionsForAllActiveRecords();
 
 if (process.env.NODE_ENV === "production") {
     // disable logging
@@ -140,6 +150,7 @@ api.post(
                 body.isActive,
                 body.tags
             );
+        if (body.isActive) executionManager.startExecutionsOfRecord(recordId);
         res.status(201);
         res.send({
             recordId: recordId,
@@ -165,19 +176,26 @@ api.put(
             return res.status(400).json({ errors: errors.array() });
         }
         const body = req.body;
-        const recordUpdate = {
+        const recordUpdate: IWebsiteRecordUpdate = {
             url: body.url,
             boundaryRegex: body.boundaryRegex,
             label: body.label,
             isActive: body.isActive,
             tags: body.tags,
         };
+        if (body.periodicityInSeconds)
+            recordUpdate.periodicityInSeconds = body.periodicityInSeconds;
         const result = await model.updateRecord(
             req.params.recordId,
             recordUpdate
         );
-        if (result) res.sendStatus(204);
-        else res.sendStatus(404);
+        if (result) {
+            if (recordUpdate.isActive === false)
+                executionManager.stopExecutionsOfRecord(req.params.recordId);
+            if (recordUpdate.periodicityInSeconds)
+                executionManager.replanExecutionsOfRecord(req.params.recordId);
+            res.sendStatus(204);
+        } else res.sendStatus(404);
     }
 );
 
@@ -185,15 +203,17 @@ api.delete(
     "/records/:recordId([0-9a-zA-Z-]+)",
     async (req: Request, res: Response) => {
         const result = await model.deleteRecord(req.params.recordId);
-        if (result) res.sendStatus(204);
-        else res.sendStatus(404);
+        if (result) {
+            executionManager.stopExecutionsOfRecord(req.params.recordId);
+            res.sendStatus(204);
+        } else res.sendStatus(404);
     }
 );
 
 api.get(
     "/records/:recordId([0-9a-zA-Z-]+)/start",
     (req: Request, res: Response) => {
-        res.send("record: " + req.params.recordId + " start");
+        executionManager.startExecutionsOfRecord(req.params.recordId);
     }
 );
 
