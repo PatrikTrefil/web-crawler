@@ -224,6 +224,15 @@ api.get(
     }
 );
 
+api.get(
+    "/crawls/:crawlId([0-9a-zA-Z-]+)",
+    async (req: Request, res: Response) => {
+        const crawl = await model.getExecution(req.params.crawlId);
+        if (crawl) res.send(crawl);
+        else res.sendStatus(404);
+    }
+);
+
 app.listen(port, () => {
     console.log(`crawler-server listening on port ${port}`);
 });

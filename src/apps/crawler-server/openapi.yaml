@@ -160,6 +160,24 @@ paths:
           description: The crawl will start as soon as possible.
         "404":
           description: Not found.
+  /crawls/{crawlId}:
+    get:
+      summary: Get a crawl with given crawlId
+      parameters:
+        - in: path
+          name: crawlId
+          required: true
+          description: Crawl identifier
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/crawl"
 
 components:
   schemas:
@@ -225,3 +243,29 @@ components:
         lastExecutionURL:
           type: string
           description: URL of the last execution of the crawl described in the website record.
+    crawl:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        startURL:
+          type: string
+        nodes:
+          type: array
+          items:
+            type: object
+            required: ["url", "links"]
+            properties:
+              url:
+                type: string
+              title:
+                type: string
+              crawlTime:
+                type: string
+                format: date-time
+              links:
+                type: array
+                items:
+                  type: string
+                  description: URL of target node.
