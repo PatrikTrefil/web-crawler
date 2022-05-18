@@ -60,8 +60,7 @@ paths:
                     type: array
                     description: Requested array of website record ids.
                     items: { $ref: "#/components/schemas/websiteRecord" }
-
-  /records/create:
+  /records/{recordId}/create:
     post:
       summary: Create a new website record
       parameters:
@@ -70,7 +69,8 @@ paths:
           required: true
           description: Website record identification.
           schema:
-            type: uuid
+            type: string
+            format: uuid
       requestBody:
         required: true
         content:
@@ -97,7 +97,8 @@ paths:
           required: true
           description: Website record identification.
           schema:
-            type: uuid
+            type: string
+            format: uuid
       responses:
         "200":
           description: Success.
@@ -115,7 +116,8 @@ paths:
           required: true
           description: Website record identification.
           schema:
-            type: uuid
+            type: string
+            format: uuid
       requestBody:
         required: true
         content:
@@ -135,7 +137,8 @@ paths:
           required: true
           description: Website record identification.
           schema:
-            type: uuid
+            type: string
+            format: uuid
       responses:
         "204":
           description: Website record deleted.
@@ -148,9 +151,10 @@ paths:
         - in: path
           name: recordId
           required: true
-          descriptiion: Website record identification
+          description: Website record identification
           schema:
-            type: uuid
+            type: string
+            format: uuid
       responses:
         "202":
           description: The crawl will start as soon as possible.
@@ -164,7 +168,8 @@ components:
       properties:
         id:
           example: 123
-          type: uuid
+          type: string
+          format: uuid
           description: Unique identifier of the website record.
         url:
           type: string
