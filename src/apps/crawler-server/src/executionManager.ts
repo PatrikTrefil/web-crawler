@@ -107,4 +107,12 @@ export default class ExecutionManager implements IExecutionManager {
         );
         this.scheduler.addSimpleIntervalJob(job);
     }
+    async startExecutionsForAllActiveRecords() {
+        const recordIds = await this.model.getRecordIds();
+        for (const recordId of recordIds) {
+            const record = await this.model.getRecordById(recordId);
+            if (record !== null && record.isActive)
+                this.planExecutionOfRecord(record);
+        }
+    }
 }
