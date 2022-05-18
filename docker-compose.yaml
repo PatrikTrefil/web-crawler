@@ -1,3 +1,4 @@
+# SET ALL REQUIRED ENV VARIABLES TO RUN THIS APP
 version: "3"
 services:
   neo4j:
@@ -23,7 +24,13 @@ services:
   express-api:
     depends_on:
       - neo4j
+      - work-queue
     restart: always
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - NEO4J_URL=${NEO4J_URL}
+      - CRAWLER_WORKER_COUNT=${CRAWLER_WORKER_COUNT}
     build:
       dockerfile: ./src/apps/crawler-server/Dockerfile
     expose:
