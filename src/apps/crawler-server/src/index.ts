@@ -151,7 +151,8 @@ api.post(
                 body.isActive,
                 body.tags
             );
-        if (body.isActive) executionManager.startExecutionsOfRecord(recordId);
+        if (body.isActive)
+            await executionManager.startExecutionsOfRecord(recordId);
         res.status(201);
         res.send({
             recordId: recordId,
@@ -192,9 +193,13 @@ api.put(
         );
         if (result) {
             if (recordUpdate.isActive === false)
-                executionManager.stopExecutionsOfRecord(req.params.recordId);
+                await executionManager.stopExecutionsOfRecord(
+                    req.params.recordId
+                );
             if (recordUpdate.periodicityInSeconds)
-                executionManager.replanExecutionsOfRecord(req.params.recordId);
+                await executionManager.replanExecutionsOfRecord(
+                    req.params.recordId
+                );
             res.sendStatus(204);
         } else res.sendStatus(404);
     }
@@ -205,7 +210,7 @@ api.delete(
     async (req: Request, res: Response) => {
         const result = await model.deleteRecord(req.params.recordId);
         if (result) {
-            executionManager.stopExecutionsOfRecord(req.params.recordId);
+            await executionManager.stopExecutionsOfRecord(req.params.recordId);
             res.sendStatus(204);
         } else res.sendStatus(404);
     }
@@ -213,8 +218,9 @@ api.delete(
 
 api.get(
     "/records/:recordId([0-9a-zA-Z-]+)/start",
-    (req: Request, res: Response) => {
-        executionManager.startExecutionsOfRecord(req.params.recordId);
+    async (req: Request, res: Response) => {
+        await executionManager.startExecutionsOfRecord(req.params.recordId);
+        res.sendStatus(202);
     }
 );
 
