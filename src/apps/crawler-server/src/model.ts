@@ -3,6 +3,7 @@ import {
     IWebsiteRecord,
     IWebsiteRecordUpdate,
     IWebPage,
+    IWebsiteRecordTemplate,
 } from "ts-types";
 import IModel from "./IModel";
 import neo4j, { Driver, Transaction, DateTime } from "neo4j-driver";
@@ -83,7 +84,7 @@ export default class Model implements IModel {
         periodicityInSeconds = 0
     ): Promise<string> {
         const session = this.driver.session();
-        const params: IWebsiteRecordUpdate = {
+        const params: IWebsiteRecordTemplate = {
             url: url,
             boundaryRegex: boundaryRegex,
             label: label,
@@ -426,8 +427,8 @@ export default class Model implements IModel {
                 `MATCH (fromNode)-[link:Link { crawlExecutionId: $crawlExecutionId }]->(toWebPage)
                  WHERE (fromNode:Record OR fromNode:WebPage) AND link.crawlTime IS NOT NULL AND link.title IS NOT NULL
                  WITH link as linkToWebPage, toWebPage as webPage
-                 MATCH (webPage)-[:Link { crawlExecutionId: $crawlExecutionId }]->(toWebPage)
-                 RETURN linkToWebPage, webPage, collect(toWebPage) as linksOutOfWebPage`,
+                 OPTIONAL MATCH (webPage)-[:Link { crawlExecutionId: $crawlExecutionId }]->(toWebPage)
+                 RETURN linkToWebPage, webPage, collect(toWebPage) as linksOutOfWebPage`, // OPTIONAL MATCH because some pages have no links out
                 {
                     crawlExecutionId: crawlExecutionId,
                 }
@@ -448,7 +449,7 @@ export default class Model implements IModel {
             const crawledPages = crawledPagesResult.records.map((record) => {
                 const webPage: IWebPage = {
                     url: record.get("webPage").properties.url,
-                    links: record.get("linksOutOfWebPage").map(
+                    links: record.get("linksOutOfWebPage")?.map(
                         (linkRes: {
                             properties: {
                                 url: string;
@@ -479,6 +480,7 @@ export default class Model implements IModel {
                 (record) => {
                     return {
                         url: record.get("webPage").properties.url,
+                        links: [],
                     };
                 }
             );
