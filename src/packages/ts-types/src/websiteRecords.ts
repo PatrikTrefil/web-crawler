@@ -19,3 +19,12 @@ export interface IWebsiteRecordUpdate {
     isActive?: boolean;
     tags?: string[];
 }
+
+export interface IWebsiteRecordTemplate {
+    url: string;
+    boundaryRegex: string;
+    periodicityInSeconds: number;
+    label: string;
+    isActive: boolean;
+    tags: string[];
+}
