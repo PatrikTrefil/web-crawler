@@ -60,17 +60,9 @@ paths:
                     type: array
                     description: Requested array of website record ids.
                     items: { $ref: "#/components/schemas/websiteRecord" }
-  /records/{recordId}/create:
+  /records/create:
     post:
       summary: Create a new website record
-      parameters:
-        - in: path
-          name: recordId
-          required: true
-          description: Website record identification.
-          schema:
-            type: string
-            format: uuid
       requestBody:
         required: true
         content:
@@ -196,7 +188,6 @@ components:
         ]
       properties:
         id:
-          example: 123
           type: string
           format: uuid
           description: Unique identifier of the website record.
