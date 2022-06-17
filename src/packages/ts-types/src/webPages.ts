@@ -2,7 +2,7 @@ export interface IWebPage {
     url: string;
     title?: string;
     crawlTime?: Date;
-    links?: string[];
+    links: string[];
 }
 
 export interface IWebPageLink {
