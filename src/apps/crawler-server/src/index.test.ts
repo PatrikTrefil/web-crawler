@@ -1,5 +1,8 @@
 import axios from "axios";
 
+const hostname = "localhost";
+const port = 8080;
+
 test.each([
     {
         boundaryRegex: ".*",
@@ -70,7 +73,7 @@ test.each([
     },
 ])("create invalid record", async (record) => {
     await expect(() =>
-        axios.post("http://localhost:4000/api/records/create", record)
+        axios.post(`http://${hostname}:${port}/api/records/create`, record)
     ).rejects.toThrowError("Request failed with status code 400");
 });
 
@@ -85,14 +88,14 @@ test.each([
     },
 ])("create valid record", async (record) => {
     const response = await axios.post(
-        "http://localhost:4000/api/records/create",
+        `http://${hostname}:${port}/api/records/create`,
         record
     );
     expect(response.status).toBe(201);
     expect(response.data.recordId).toBeTruthy();
 
     const getRecordResponse = await axios.get(
-        "http://localhost:4000/api/records/" + response.data.recordId
+        `http://${hostname}:${port}/api/records/` + response.data.recordId
     );
     expect(getRecordResponse.data).toStrictEqual({
         ...record,
