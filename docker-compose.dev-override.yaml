@@ -1,0 +1,15 @@
+# SET ALL REQUIRED ENV VARIABLES TO RUN THIS APP
+
+# publish ports for direct access to services
+services:
+  neo4j:
+    ports:
+      - 7474:7474
+      - 7687:7687
+  express-api:
+    ports:
+      - 4000:4000
+  work-queue:
+    ports:
+      - 5672:5672
+      - 15672:15672

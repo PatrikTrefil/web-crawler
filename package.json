@@ -11,7 +11,8 @@
     "formatFix": "npx prettier --write src/",
     "lintFix": "npx turbo run lintFix",
     "lintCheck": "npx turbo run lintCheck",
-    "formatCheck": "npx prettier --check src/"
+    "formatCheck": "npx prettier --check src/",
+    "dockerDev": "docker compose -f docker-compose.yaml -f docker-compose.dev-override.yaml up"
   },
   "repository": {
     "type": "git",
