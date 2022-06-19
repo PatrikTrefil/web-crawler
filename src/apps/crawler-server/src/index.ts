@@ -101,7 +101,7 @@ api.get(
             resultIds = unfilteredUnsortedIds;
         }
 
-        res.send(resultIds);
+        res.json(resultIds);
     }
 );
 
@@ -109,7 +109,7 @@ api.get(
     "/records/:recordId([0-9a-zA-Z-]+)",
     async (req: Request, res: Response) => {
         const record = await model.getRecordById(req.params.recordId);
-        res.send(record);
+        res.json(record);
     }
 );
 
@@ -154,7 +154,7 @@ api.post(
         if (body.isActive)
             await executionManager.startExecutionsOfRecord(recordId);
         res.status(201);
-        res.send({
+        res.json({
             recordId: recordId,
         });
     }
@@ -228,7 +228,7 @@ api.get(
     "/crawls/:crawlId([0-9a-zA-Z-]+)",
     async (req: Request, res: Response) => {
         const crawl = await model.getExecution(req.params.crawlId);
-        if (crawl) res.send(crawl);
+        if (crawl) res.json(crawl);
         else res.sendStatus(404);
     }
 );
