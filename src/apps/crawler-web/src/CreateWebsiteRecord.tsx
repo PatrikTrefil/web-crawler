@@ -110,7 +110,11 @@ export function CreateWebsiteRecordForm({
                         name="boundary-regex"
                         type="text"
                         value={boundaryRegex}
-                        onChange={(e) => setBoundaryRegex(e.target.value)}
+                        onChange={(e) => {
+                            e.target.setCustomValidity("");
+                            // ^ this is necessary (it appears that all submit events are blocked until we reset it)
+                            setBoundaryRegex(e.target.value);
+                        }}
                         ref={regexInputRef}
                         required={true}
                         className="form-control"
