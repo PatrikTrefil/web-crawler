@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { deleteWebsiteRecord } from "./api";
 import ReactPaginate from "react-paginate";
 import { IWebsiteRecord } from "ts-types";
+import { Modal, ModalHeader, ModalBody, List } from "reactstrap";
 
 export function RecordList({
     itemsPerPage,
@@ -113,6 +114,39 @@ export function Page(props: {
         props.setRecords(updatedRecords);
     };
 
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+    const [selectedRecordForDetails, setSelectedRecordForDetails] =
+        useState<IWebsiteRecord | null>();
+    const toggleDetailModal = () => {
+        setIsDetailModalOpen(!isDetailModalOpen);
+    };
+    const detailsModal = (
+        <Modal isOpen={isDetailModalOpen} toggle={toggleDetailModal}>
+            <ModalHeader toggle={toggleDetailModal}>Details</ModalHeader>
+            <ModalBody>
+                {selectedRecordForDetails && (
+                    <List type="unstyled">
+                        <li>URL: {selectedRecordForDetails.url}</li>
+                        <li>Label: {selectedRecordForDetails.label}</li>
+                        <li>
+                            Boundary regex:{" "}
+                            {selectedRecordForDetails.boundaryRegex}
+                        </li>
+                        <li>Is active?: {selectedRecordForDetails.isActive}</li>
+                        <li>
+                            Periodicity:{" "}
+                            {selectedRecordForDetails.periodicityInSeconds} s
+                        </li>
+                        <li>
+                            Tags: {selectedRecordForDetails.tags.join(", ")}
+                        </li>
+                    </List>
+                )}
+                {!selectedRecordForDetails && <div>No record selected</div>}
+            </ModalBody>
+        </Modal>
+    );
+
     if (props.error)
         return <div className="alert alert-danger">{props.error}</div>;
 
@@ -127,7 +161,15 @@ export function Page(props: {
                         <span className="text-secondary">({record.id})</span>
                     </div>
                     <div className="controls">
-                        <button className="btn btn-primary">Details</button>
+                        <button
+                            className="btn btn-primary"
+                            onClick={() => {
+                                setSelectedRecordForDetails(record);
+                                toggleDetailModal();
+                            }}
+                        >
+                            Details
+                        </button>
                         <button
                             className="btn btn-danger"
                             onClick={async () => {
@@ -140,7 +182,12 @@ export function Page(props: {
                 </li>
             );
         });
-        return <ul className="record-list list-group">{recordList}</ul>;
+        return (
+            <>
+                <ul className="record-list list-group">{recordList}</ul>
+                {detailsModal}
+            </>
+        );
     }
     return <div className="text-center">No records exist.</div>;
 }
