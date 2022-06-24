@@ -1,6 +1,7 @@
 import { FormEvent, useState, useRef } from "react";
 import { IWebsiteRecordTemplate, IWebsiteRecord } from "ts-types";
 import { createWebsiteRecord, getRecord } from "./api";
+import { isValidRegex } from "./utility";
 
 export function CreateWebsiteRecordForm({
     records,
@@ -166,13 +167,4 @@ export function CreateWebsiteRecordForm({
             </form>
         </div>
     );
-}
-
-function isValidRegex(regex: string): boolean {
-    try {
-        new RegExp(regex);
-        return true;
-    } catch {
-        return false;
-    }
 }
