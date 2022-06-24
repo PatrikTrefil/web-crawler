@@ -237,7 +237,12 @@ app.listen(port, () => {
     console.log(`crawler-server listening on port ${port}`);
 });
 
+/**
+ * empty regex is considered invalid
+ * @returns {boolean} indicating validity
+ */
 function regexValidator(value: string) {
+    if (value === "") return false;
     try {
         new RegExp(value);
     } catch (e) {
