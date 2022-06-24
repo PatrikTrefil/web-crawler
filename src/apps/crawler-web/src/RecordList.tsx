@@ -4,7 +4,9 @@ import { useState, useEffect } from "react";
 import { deleteWebsiteRecord } from "./api";
 import ReactPaginate from "react-paginate";
 import { IWebsiteRecord } from "ts-types";
-import { Modal, ModalHeader, ModalBody, List } from "reactstrap";
+import { Modal, ModalHeader, ModalBody } from "reactstrap";
+import EditRecord from "./EditRecord";
+import RecordDetails from "./RecordDetails";
 
 export function RecordList({
     itemsPerPage,
@@ -117,30 +119,52 @@ export function Page(props: {
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [selectedRecordForDetails, setSelectedRecordForDetails] =
         useState<IWebsiteRecord | null>();
+    const [isDetailsModalInEditMode, setIsDetailsModalInEditMode] =
+        useState(false);
+    const toggleEditMode = () => {
+        setIsDetailsModalInEditMode(!isDetailsModalInEditMode);
+    };
     const toggleDetailModal = () => {
         setIsDetailModalOpen(!isDetailModalOpen);
     };
     const detailsModal = (
-        <Modal isOpen={isDetailModalOpen} toggle={toggleDetailModal}>
-            <ModalHeader toggle={toggleDetailModal}>Details</ModalHeader>
+        <Modal
+            isOpen={isDetailModalOpen}
+            toggle={() => {
+                setIsDetailsModalInEditMode(false);
+                toggleDetailModal();
+            }}
+        >
+            <ModalHeader
+                toggle={() => {
+                    setIsDetailsModalInEditMode(false);
+                    toggleDetailModal();
+                }}
+            >
+                Details
+            </ModalHeader>
             <ModalBody>
-                {selectedRecordForDetails && (
-                    <List type="unstyled">
-                        <li>URL: {selectedRecordForDetails.url}</li>
-                        <li>Label: {selectedRecordForDetails.label}</li>
-                        <li>
-                            Boundary regex:{" "}
-                            {selectedRecordForDetails.boundaryRegex}
-                        </li>
-                        <li>Is active?: {selectedRecordForDetails.isActive}</li>
-                        <li>
-                            Periodicity:{" "}
-                            {selectedRecordForDetails.periodicityInSeconds} s
-                        </li>
-                        <li>
-                            Tags: {selectedRecordForDetails.tags.join(", ")}
-                        </li>
-                    </List>
+                {selectedRecordForDetails && !isDetailsModalInEditMode && (
+                    <>
+                        <button
+                            className="btn btn-info"
+                            onClick={toggleEditMode}
+                        >
+                            Edit
+                        </button>
+                        <RecordDetails
+                            recordToDisplay={selectedRecordForDetails}
+                        />
+                    </>
+                )}
+                {selectedRecordForDetails && isDetailsModalInEditMode && (
+                    <EditRecord
+                        recordToEdit={selectedRecordForDetails}
+                        setRecordToEdit={setSelectedRecordForDetails}
+                        records={props.records}
+                        setRecords={props.setRecords}
+                        afterSubmit={toggleEditMode}
+                    />
                 )}
                 {!selectedRecordForDetails && <div>No record selected</div>}
             </ModalBody>
