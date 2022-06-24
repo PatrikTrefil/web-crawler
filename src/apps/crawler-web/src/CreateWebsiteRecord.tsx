@@ -72,71 +72,97 @@ export function CreateWebsiteRecordForm({
                 <div className="alert alert-danger">{errorMessage}</div>
             )}
             <form onSubmit={submitForm}>
-                <label htmlFor="url">URL</label>
-                <input
-                    id="url"
-                    name="url"
-                    type="url"
-                    value={url}
-                    onChange={(event) => setUrl(event.target.value)}
-                    required={true}
-                />
-                <br />
-                <label htmlFor="label">Label</label>
-                <input
-                    id="label"
-                    name="label"
-                    type="text"
-                    value={label}
-                    onChange={(e) => setLabel(e.target.value)}
-                    required={true}
-                />
-                <br />
-                <label htmlFor="boundary-regex">Boundary regex</label>
-                <input
-                    id="boundary-regex"
-                    name="boundary-regex"
-                    type="text"
-                    value={boundaryRegex}
-                    onChange={(e) => setBoundaryRegex(e.target.value)}
-                    ref={regexInputRef}
-                    required={true}
-                />
-                <br />
-                <label htmlFor="periodicity">Periodicity in seconds</label>
-                <input
-                    id="periodicity"
-                    name="periodicity"
-                    type="number"
-                    min="0"
-                    value={periodicityInSecondsString}
-                    onChange={(e) =>
-                        setPeriodicityInSecondsString(e.target.value)
-                    }
-                    required={true}
-                />
-                <br />
-                <label htmlFor="active">Is active?</label>
-                <input
-                    type="checkbox"
-                    name="active"
-                    id="active"
-                    checked={isActive}
-                    onChange={(e) => setIsActive(e.target.checked)}
-                />
-                <br />
-                <label htmlFor="tags">Tags (comma-separated list)</label>
-                {/* comma separated list of non-empty alpha-numeric strings */}
-                <input
-                    id="tags"
-                    name="tags"
-                    type="text"
-                    pattern="^(([a-zA-Z0-9]+)(,[a-zA-Z0-9]+)*|[a-zA-Z0-9]*)$"
-                    value={tagsString}
-                    onChange={(e) => setTagsString(e.target.value)}
-                />
-                <br />
-                <button type="submit">Submit</button>
+                <div className="mb-3">
+                    <label className="form-label" htmlFor="url">
+                        URL
+                    </label>
+                    <input
+                        id="url"
+                        name="url"
+                        type="url"
+                        value={url}
+                        onChange={(event) => setUrl(event.target.value)}
+                        required={true}
+                        className="form-control"
+                    />
+                </div>
+                <div className="mb-3">
+                    <label className="form-label" htmlFor="label">
+                        Label
+                    </label>
+                    <input
+                        id="label"
+                        name="label"
+                        type="text"
+                        value={label}
+                        onChange={(e) => setLabel(e.target.value)}
+                        required={true}
+                        className="form-control"
+                    />
+                </div>
+                <div className="mb-3">
+                    <label className="form-label" htmlFor="boundary-regex">
+                        Boundary regex
+                    </label>
+                    <input
+                        id="boundary-regex"
+                        name="boundary-regex"
+                        type="text"
+                        value={boundaryRegex}
+                        onChange={(e) => setBoundaryRegex(e.target.value)}
+                        ref={regexInputRef}
+                        required={true}
+                        className="form-control"
+                    />
+                </div>
+                <div className="mb-3">
+                    <label className="form-label" htmlFor="periodicity">
+                        Periodicity in seconds
+                    </label>
+                    <input
+                        id="periodicity"
+                        name="periodicity"
+                        type="number"
+                        min="0"
+                        value={periodicityInSecondsString}
+                        onChange={(e) =>
+                            setPeriodicityInSecondsString(e.target.value)
+                        }
+                        required={true}
+                        className="form-control"
+                    />
+                </div>
+                <div className="form-check mb-3">
+                    <input
+                        type="checkbox"
+                        name="active"
+                        id="active"
+                        checked={isActive}
+                        onChange={(e) => setIsActive(e.target.checked)}
+                        className="form-check-input"
+                    />
+                    <label className="form-check-label" htmlFor="active">
+                        Is active?
+                    </label>
+                </div>
+                <div className="mb-3">
+                    <label className="form-label" htmlFor="tags">
+                        Tags (comma-separated list)
+                    </label>
+                    {/* comma separated list of non-empty alpha-numeric strings */}
+                    <input
+                        id="tags"
+                        name="tags"
+                        type="text"
+                        pattern="^(([a-zA-Z0-9]+)(,[a-zA-Z0-9]+)*|[a-zA-Z0-9]*)$"
+                        value={tagsString}
+                        onChange={(e) => setTagsString(e.target.value)}
+                        className="form-control"
+                    />
+                </div>
+                <button type="submit" className="btn btn-primary mt-3">
+                    Submit
+                </button>
             </form>
         </div>
     );
