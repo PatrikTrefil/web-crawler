@@ -12,6 +12,7 @@ export function RecordList({
     isLoading,
     error,
     showErrorMessage,
+    sortFunction,
 }: {
     itemsPerPage: number;
     records: IWebsiteRecord[];
@@ -21,6 +22,8 @@ export function RecordList({
     error: string;
     // eslint-disable-next-line no-unused-vars
     showErrorMessage: (message: string) => void;
+    sortFunction: // eslint-disable-next-line no-unused-vars
+    ((a: IWebsiteRecord, b: IWebsiteRecord) => number) | undefined;
 }) {
     const [currentlyDisplayedRecords, setCurrentlyDisplayedRecords] = useState<
         Array<IWebsiteRecord>
@@ -28,12 +31,27 @@ export function RecordList({
 
     const [pageCount, setPageCount] = useState(0);
     const [itemOffset, setItemOffset] = useState(0);
+    const [pageIndex, setPageIndex] = useState(0); // zero based, use this to override current page
 
+    // updating of page count
+    useEffect(() => {
+        setPageCount(Math.ceil(records.length / itemsPerPage));
+    }, [records, itemsPerPage]);
+    // recalc indexes if page count changes
+    useEffect(() => {
+        const lastItemOffset = pageCount > 0 ? pageCount * itemsPerPage - 1 : 0; // set to zero if empty
+        if (itemOffset > lastItemOffset) {
+            setItemOffset((pageCount - 1) * itemsPerPage);
+            setPageIndex(pageCount - 1);
+        }
+    }, [pageCount]);
+    // recompute displayed records if anything changes
     useEffect(() => {
         const endOffset = itemOffset + itemsPerPage;
-        setCurrentlyDisplayedRecords(records.slice(itemOffset, endOffset));
-        setPageCount(Math.ceil(records.length / itemsPerPage));
-    }, [records, isLoading, itemOffset, itemsPerPage]);
+        const recordsCopy = [...records];
+        recordsCopy.sort(sortFunction);
+        setCurrentlyDisplayedRecords(recordsCopy.slice(itemOffset, endOffset));
+    }, [records, isLoading, itemOffset, itemsPerPage, sortFunction]);
 
     const handlePageClick = (selectedItem: { selected: number }) => {
         const newOffset =
@@ -43,7 +61,8 @@ export function RecordList({
     return (
         <>
             <Page
-                records={currentlyDisplayedRecords}
+                recordsOfPage={currentlyDisplayedRecords}
+                records={records}
                 setRecords={setRecords}
                 error={error}
                 isLoading={isLoading}
@@ -56,6 +75,7 @@ export function RecordList({
                 pageRangeDisplayed={5}
                 pageCount={pageCount}
                 activeClassName="active"
+                forcePage={pageIndex}
                 disabledClassName="disabled"
                 className="pagination justify-content-center mt-3"
                 pageClassName="page-item"
@@ -70,6 +90,7 @@ export function RecordList({
 }
 
 export function Page(props: {
+    recordsOfPage: Array<IWebsiteRecord>;
     records: Array<IWebsiteRecord>;
     // eslint-disable-next-line no-unused-vars
     setRecords: (records: Array<IWebsiteRecord>) => void;
@@ -86,9 +107,10 @@ export function Page(props: {
             else props.showErrorMessage("Unknown error");
             return;
         }
-        props.setRecords(
-            props.records.filter((record) => record.id !== recordIdToDelete)
+        const updatedRecords = props.records.filter(
+            (record) => record.id !== recordIdToDelete
         );
+        props.setRecords(updatedRecords);
     };
 
     if (props.error)
@@ -96,8 +118,8 @@ export function Page(props: {
 
     if (props.isLoading) return <div className="text-center">Loading ...</div>;
 
-    if (props.records.length > 0) {
-        const recordList = props.records.map((record) => {
+    if (props.recordsOfPage.length > 0) {
+        const recordList = props.recordsOfPage.map((record) => {
             return (
                 <li className="list-group-item" key={record.id}>
                     <div>

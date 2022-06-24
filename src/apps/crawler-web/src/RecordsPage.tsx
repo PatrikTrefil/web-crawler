@@ -8,12 +8,17 @@ import { RecordList } from "./RecordList";
 import { Filter } from "./Filter";
 import { CreateWebsiteRecordForm } from "./CreateWebsiteRecord";
 import { IWebsiteRecord } from "ts-types";
+import SortSelect from "./SortSelect";
 
 function RecordsPage() {
     const [records, setRecords] = useState<Array<IWebsiteRecord>>([]);
     const [filteredRecords, setFilteredRecords] = useState<
         Array<IWebsiteRecord>
     >([]);
+    const [sortFunction, setSortFunction] = useState<
+        // eslint-disable-next-line no-unused-vars
+        ((a: IWebsiteRecord, b: IWebsiteRecord) => number) | undefined
+    >();
     const [isLoadingRecords, setIsLoadingRecords] = useState(true);
 
     const [errorMsgRecordLoading, setErrorMsgRecordLoading] = useState(""); // empty string => no errors
@@ -77,6 +82,7 @@ function RecordsPage() {
             >
                 Filters
             </button>
+            <SortSelect setSortFunction={setSortFunction} />
             <Collapse isOpen={filterCollapseIsOpen}>
                 <Filter
                     records={records}
@@ -90,6 +96,7 @@ function RecordsPage() {
                 showErrorMessage={showErrorMessage}
                 error={errorMsgRecordLoading}
                 isLoading={isLoadingRecords}
+                sortFunction={sortFunction}
             />
             <button
                 className="btn btn-success create-btn"
