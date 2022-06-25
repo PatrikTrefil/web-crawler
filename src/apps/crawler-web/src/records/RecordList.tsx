@@ -34,7 +34,7 @@ export function RecordList({
 
     const [pageCount, setPageCount] = useState(0);
     const [itemOffset, setItemOffset] = useState(0);
-    const [pageIndex, setPageIndex] = useState(0); // zero based, use this to override current page
+    const [pageIndex, setPageIndex] = useState(-1); // zero based, use this to override current page; -1 means there are no pages
 
     // updating of page count
     useEffect(() => {
