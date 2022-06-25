@@ -19,6 +19,9 @@ export default interface IExecutionManager {
     /**
      * All future crawls will be cancelled and a new crawl will be started as soon as possible.
      * Call this method after an update of periodicityInSeconds of a record or any other relevant properties to update the management of the record.
+     *
+     * It is okay to replan even if the execution has not been planned before.
+     *
      * @throws "Not found" if a record with recordId is not found.
      */
     replanExecutionsOfRecord(recordId: string): Promise<void>;
