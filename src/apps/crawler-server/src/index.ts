@@ -163,13 +163,18 @@ api.post(
 api.put(
     "/records/:recordId([0-9a-zA-Z-]+)",
     express.json(),
-    body("url").isURL(),
-    body("boundaryRegex").isString().notEmpty().custom(regexValidator),
-    body("label").isString().notEmpty(),
-    body("isActive").isBoolean(),
-    body("tags").isArray(),
-    check("tags.*").isString().notEmpty(),
+    body("url").optional().isURL(),
+    body("boundaryRegex")
+        .optional()
+        .isString()
+        .notEmpty()
+        .custom(regexValidator),
+    body("label").optional().isString().notEmpty(),
+    body("isActive").optional().isBoolean(),
+    body("tags").optional().isArray(),
+    check("tags.*").optional().isString().notEmpty(),
     body("periodicityInSeconds")
+        .optional()
         .isInt()
         .custom((value) => value >= 0),
     async (req: Request, res: Response) => {
