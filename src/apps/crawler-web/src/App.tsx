@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import RecordsPage from "./records/RecordsPage";
 import NotFound from "./NotFound";
 import PageLayout from "./PageLayout";
-import ExecutionsPage from "./ExecutionsPage";
+import ExecutionsPage from "./executions/ExecutionsPage";
 
 export default function App() {
     return (
