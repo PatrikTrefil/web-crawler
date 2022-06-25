@@ -192,7 +192,11 @@ api.put(
             recordUpdate
         );
         if (result) {
-            if (recordUpdate.isActive === false)
+            if (recordUpdate.isActive)
+                await executionManager.startExecutionsOfRecord(
+                    req.params.recordId
+                );
+            else
                 await executionManager.stopExecutionsOfRecord(
                     req.params.recordId
                 );
