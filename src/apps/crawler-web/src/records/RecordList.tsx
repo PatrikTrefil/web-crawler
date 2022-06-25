@@ -1,7 +1,7 @@
 import "./RecordList.css";
 
 import { useState, useEffect } from "react";
-import { deleteWebsiteRecord } from "../api";
+import { deleteWebsiteRecord, startCrawl } from "../api";
 import ReactPaginate from "react-paginate";
 import { IWebsiteRecord } from "ts-types";
 import { Modal, ModalHeader, ModalBody } from "reactstrap";
@@ -42,10 +42,15 @@ export function RecordList({
     }, [records, itemsPerPage]);
     // recalc indexes if page count changes
     useEffect(() => {
-        const lastItemOffset = pageCount > 0 ? pageCount * itemsPerPage - 1 : 0; // set to zero if empty
-        if (itemOffset > lastItemOffset) {
-            setItemOffset((pageCount - 1) * itemsPerPage);
-            setPageIndex(pageCount - 1);
+        if (pageCount === 0) {
+            setItemOffset(0);
+            setPageIndex(-1);
+        } else {
+            const lastItemOffset = pageCount * itemsPerPage - 1;
+            if (itemOffset > lastItemOffset) {
+                setItemOffset((pageCount - 1) * itemsPerPage);
+                setPageIndex(pageCount - 1);
+            }
         }
     }, [pageCount]);
     // recompute displayed records if anything changes
@@ -185,6 +190,14 @@ export function Page(props: {
                         <span className="text-secondary">({record.id})</span>
                     </div>
                     <div className="controls">
+                        <button
+                            className="btn btn-success"
+                            onClick={() => {
+                                startCrawl(record.id);
+                            }}
+                        >
+                            Start crawl
+                        </button>
                         <button
                             className="btn btn-primary"
                             onClick={() => {
