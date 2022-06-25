@@ -228,6 +228,11 @@ api.get(
     }
 );
 
+api.get("/crawls", async (req: Request, res: Response) => {
+    const crawlIds = await model.getExecutionIds();
+    res.json(crawlIds);
+});
+
 api.get(
     "/crawls/:crawlId([0-9a-zA-Z-]+)",
     async (req: Request, res: Response) => {

@@ -245,6 +245,24 @@ export default class Model implements IModel {
     }
     // #endregion
     // #region Crawlexecutions
+    public async getExecutionIds(): Promise<string[]> {
+        const session = this.driver.session();
+        let executionIds: string[];
+        try {
+            const result = await session.run(
+                `MATCH (record:Record)-[execution:Execution]->(page:WebPage) RETURN execution.id`
+            );
+            executionIds = result.records.map((record) =>
+                record.get("execution.id")
+            );
+        } catch (e) {
+            session.close();
+            throw e;
+        } finally {
+            session.close();
+        }
+        return executionIds;
+    }
     /**
      * @returns true if the webpage was created; false if the webpage already exists
      */
@@ -497,5 +515,6 @@ export default class Model implements IModel {
         }
         return execution;
     }
+
     // #endregion
 }

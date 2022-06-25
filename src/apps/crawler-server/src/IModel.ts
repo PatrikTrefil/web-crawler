@@ -57,6 +57,11 @@ export default interface IModel {
     // #region CrawlExecutions
 
     /**
+     * @returns all ids of executions
+     */
+    getExecutionIds(): Promise<Array<string>>;
+
+    /**
      * Create a link between a website record (template for an execution)
      * and the starting webpage of the crawl if it does not exist.
      * @param websiteRecordId id of the website record from which the link is coming
