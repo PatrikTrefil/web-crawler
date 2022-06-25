@@ -98,6 +98,15 @@ export async function startCrawl(recordId: string): Promise<void> {
         );
 }
 
+export async function getCrawlIds(): Promise<Array<string>> {
+    const response = await fetch(apiUrl + `/crawls`);
+    if (!response.ok)
+        throw new Error(
+            `This is an HTTP error: The status is ${response.status}`
+        );
+    return (await response.json()) as string[];
+}
+
 /**
  * @returns execution of the crawl with given executionId
  * @throws Error if the request fails
