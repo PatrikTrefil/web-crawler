@@ -1,7 +1,7 @@
 import { FormEvent, useState, useRef } from "react";
 import { IWebsiteRecordTemplate, IWebsiteRecord } from "ts-types";
-import { createWebsiteRecord, getRecord } from "./api";
-import { isValidRegex } from "./utility";
+import { createWebsiteRecord, getRecord } from "../api";
+import { isValidRegex } from "../utility";
 
 export function CreateWebsiteRecordForm({
     records,

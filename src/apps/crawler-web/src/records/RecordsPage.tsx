@@ -2,13 +2,13 @@ import "./RecordsPage.css";
 import "bootstrap/dist/css/bootstrap.css";
 
 import { useState, useEffect } from "react";
-import { getRecord, getRecordIds } from "./api";
+import { getRecord, getRecordIds } from "../api";
 import { Modal, ModalHeader, ModalBody, Collapse } from "reactstrap";
 import { RecordList } from "./RecordList";
-import { Filter } from "./Filter";
-import { CreateWebsiteRecordForm } from "./CreateWebsiteRecord";
+import { Filter } from "./FilterRecords";
+import { CreateWebsiteRecordForm } from "./CreateRecord";
 import { IWebsiteRecord } from "ts-types";
-import SortSelect from "./SortSelect";
+import SortSelect from "./SortRecords";
 
 function RecordsPage() {
     const [records, setRecords] = useState<Array<IWebsiteRecord>>([]);

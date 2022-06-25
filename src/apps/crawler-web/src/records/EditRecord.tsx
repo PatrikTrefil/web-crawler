@@ -1,7 +1,7 @@
 import { IWebsiteRecord } from "ts-types";
 import { useState, useRef, FormEvent } from "react";
-import { updateWebsiteRecord } from "./api";
-import { isValidRegex } from "./utility";
+import { updateWebsiteRecord } from "../api";
+import { isValidRegex } from "../utility";
 
 export default function EditRecord({
     recordToEdit,

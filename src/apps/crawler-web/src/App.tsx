@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import RecordsPage from "./RecordsPage";
+import RecordsPage from "./records/RecordsPage";
 import NotFound from "./NotFound";
 import PageLayout from "./PageLayout";
 import ExecutionsPage from "./ExecutionsPage";

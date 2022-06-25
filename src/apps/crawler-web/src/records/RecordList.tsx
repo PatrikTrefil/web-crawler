@@ -1,7 +1,7 @@
 import "./RecordList.css";
 
 import { useState, useEffect } from "react";
-import { deleteWebsiteRecord } from "./api";
+import { deleteWebsiteRecord } from "../api";
 import ReactPaginate from "react-paginate";
 import { IWebsiteRecord } from "ts-types";
 import { Modal, ModalHeader, ModalBody } from "reactstrap";
