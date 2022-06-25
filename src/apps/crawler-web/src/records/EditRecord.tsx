@@ -1,4 +1,4 @@
-import { IWebsiteRecord } from "ts-types";
+import { IWebsiteRecord, IWebsiteRecordUpdate } from "ts-types";
 import { useState, useRef, FormEvent } from "react";
 import { updateWebsiteRecord } from "../api";
 import { isValidRegex } from "../utility";
@@ -49,17 +49,22 @@ export default function EditRecord({
         } else {
             regexInputRef.current.setCustomValidity("");
         }
-        const recordUpdate = {
-            url: url,
-            label: label,
-            boundaryRegex: boundaryRegex,
-            periodicityInSeconds: parseInt(periodicityInSecondsString),
-            isActive: isActive,
-            tags:
-                tagsString === ""
-                    ? []
-                    : tagsString.split(",").map((tag) => tag.trim()),
-        };
+        const recordUpdate: IWebsiteRecordUpdate = {};
+        if (url !== recordToEdit.url) recordUpdate.url = url;
+        if (label !== recordToEdit.label) recordUpdate.label = label;
+        if (boundaryRegex !== recordToEdit.boundaryRegex)
+            recordUpdate.boundaryRegex = boundaryRegex;
+        const periodicityInSeconds = parseInt(periodicityInSecondsString);
+        if (periodicityInSeconds !== recordToEdit.periodicityInSeconds)
+            recordUpdate.periodicityInSeconds = periodicityInSeconds;
+        if (isActive !== recordToEdit.isActive)
+            recordUpdate.isActive = isActive;
+        const tags =
+            tagsString === ""
+                ? []
+                : tagsString.split(",").map((tag) => tag.trim());
+        if (tags !== recordToEdit.tags) recordUpdate.tags = tags;
+
         try {
             await updateWebsiteRecord(recordToEdit.id, recordUpdate);
         } catch (e) {
@@ -74,7 +79,12 @@ export default function EditRecord({
         );
         const editedRecord: IWebsiteRecord = {
             id: recordToEdit.id,
-            ...recordUpdate,
+            url: url,
+            label: label,
+            boundaryRegex: boundaryRegex,
+            periodicityInSeconds: periodicityInSeconds,
+            isActive: isActive,
+            tags: tags,
             lastExecutionId: recordToEdit.lastExecutionId,
         };
         setRecordToEdit(editedRecord);
