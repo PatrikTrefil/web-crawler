@@ -129,7 +129,7 @@ export default class Model implements IModel {
                 recordUpdate.tags
             )
         )
-            throw "No update parameters provided";
+            return this.getRecordById(id); // nothing to change
         const propertyChanges = []; // parts of the Cypher query
         const stringRecordUpdate: {
             url?: string;
