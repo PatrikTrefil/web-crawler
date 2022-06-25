@@ -104,5 +104,9 @@ export async function startCrawl(recordId: string): Promise<void> {
  */
 export async function getCrawl(crawlId: string): Promise<ICrawlExecution> {
     const response = await fetch(apiUrl + `/crawls/${crawlId}`);
+    if (!response.ok)
+        throw new Error(
+            `This is an HTTP error: The status is ${response.status}`
+        );
     return (await response.json()) as ICrawlExecution;
 }
