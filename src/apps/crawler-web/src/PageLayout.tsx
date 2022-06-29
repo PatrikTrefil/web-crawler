@@ -11,10 +11,10 @@ export default function PageLayout() {
                     <h1>Web crawler</h1>
                 </Link>
                 <nav className="nav nav-pills ps-5">
-                    <NavLink to="records" className="nav-link">
+                    <NavLink to="records" className="nav-link text-dark">
                         Records
                     </NavLink>
-                    <NavLink to="executions" className="nav-link">
+                    <NavLink to="executions" className="nav-link text-dark">
                         Executions
                     </NavLink>
                 </nav>
