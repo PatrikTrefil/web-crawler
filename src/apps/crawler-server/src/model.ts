@@ -459,7 +459,7 @@ export default class Model implements IModel {
                         MATCH (fromNode)-[link:Link { crawlExecutionId: $crawlExecutionId }]->(toWebPage)
                         WHERE (fromNode:Record OR fromNode:WebPage) AND link.crawlTime IS NOT NULL AND link.title IS NOT NULL
                     }
-                 RETURN toWebPage as webPage`,
+                 RETURN DISTINCT toWebPage as webPage`,
                 {
                     crawlExecutionId: crawlExecutionId,
                 }
@@ -502,9 +502,19 @@ export default class Model implements IModel {
                     };
                 }
             );
+            const unionWithUniqueUrl = [...crawledPages]; // some pages are consired crawled and uncrawled -> ignore duplicates
+            for (const uncrawledPage of uncrawledPages) {
+                if (
+                    !crawledPages.find(
+                        (crawledPage) => crawledPage.url === uncrawledPage.url
+                    )
+                )
+                    unionWithUniqueUrl.push(uncrawledPage);
+            }
+
             execution = {
                 id: crawlExecutionId,
-                nodes: [...crawledPages, ...uncrawledPages],
+                nodes: unionWithUniqueUrl,
                 startURL: startURLResult.records[0].get("webPage.url"),
             };
         } catch (e) {
