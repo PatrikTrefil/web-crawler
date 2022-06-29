@@ -5,10 +5,11 @@ import cytoscape from "cytoscape";
 // @ts-ignore types don't exist
 import coseBilkent from "cytoscape-cose-bilkent";
 import { useEffect, useRef, useState } from "react";
-import { ICrawlExecution } from "ts-types";
+import { ICrawlExecution, IWebPage } from "ts-types";
 import { getCrawl } from "./api";
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { Modal, ModalHeader, ModalBody } from "reactstrap";
 
 cytoscape.use(coseBilkent);
 
@@ -66,6 +67,11 @@ export default function CrawlVisualization() {
         },
     ];
     const [cy, setCy] = useState<cytoscape.Core>();
+    const [nodeForDetails, setNodeForDetails] = useState<IWebPage>();
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const toggleDetailsModal = () => {
+        setIsDetailsModalOpen(!isDetailsModalOpen);
+    };
     useEffect(() => {
         setCy(
             cytoscape({
@@ -88,6 +94,11 @@ export default function CrawlVisualization() {
 
         layout.run();
     };
+    const nodeClickHandler = (e: cytoscape.EventObject) => {
+        const node = e.target;
+        setNodeForDetails(node.data().webpage);
+        toggleDetailsModal();
+    };
     const visualizeWebsite = (cyWebsite: cytoscape.Core) => {
         if (!crawl || !cyWebsite) return;
         cyWebsite.add({
@@ -102,11 +113,17 @@ export default function CrawlVisualization() {
                 displayedUrl =
                     node.url.substring(0, urlLengthLimit - 1) + "...";
             else displayedUrl = node.url;
+            const webpage: IWebPage = {
+                url: node.url,
+                title: node.title,
+                links: node.links,
+            };
             cyWebsite.add({
                 group: "nodes",
                 data: {
                     id: node.url,
                     label: displayedUrl,
+                    webpage: webpage,
                 },
                 classes: node.title ? "crawled" : "uncrawled",
             });
@@ -130,6 +147,7 @@ export default function CrawlVisualization() {
             }
         }
         applyLayout(cyWebsite);
+        cyWebsite.on("tap", "node", nodeClickHandler);
     };
     const visualizeDomain = (cyDomain: cytoscape.Core) => {
         if (!crawl || !cyDomain) return;
@@ -217,6 +235,42 @@ export default function CrawlVisualization() {
                 Toggle website/domain mode
             </Link>
             <div ref={containerRef} className="cy"></div>
+            <Modal
+                toggle={toggleDetailsModal}
+                isOpen={isDetailsModalOpen}
+                scrollable
+                size="lg"
+            >
+                <ModalHeader toggle={toggleDetailsModal}>
+                    Node details
+                </ModalHeader>
+                <ModalBody>
+                    {nodeForDetails ? (
+                        <NodeDetails node={nodeForDetails} />
+                    ) : (
+                        <></>
+                    )}
+                </ModalBody>
+            </Modal>
         </>
+    );
+}
+
+function NodeDetails({ node: node }: { node: IWebPage }) {
+    return (
+        <ul>
+            <li>url: {node.url}</li>
+            {node.title && <li>title: {node.title}</li>}
+            {node.links.length > 0 && (
+                <li>
+                    links:
+                    <ul>
+                        {node.links.map((link) => {
+                            return <li key={link}>{link}</li>;
+                        })}
+                    </ul>
+                </li>
+            )}
+        </ul>
     );
 }
