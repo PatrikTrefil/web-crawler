@@ -151,11 +151,11 @@ export default function CrawlVisualization() {
             if (node.domain.length > domainLengthLimit)
                 displayedDomain =
                     node.domain.substring(0, domainLengthLimit - 1) + "...";
-            else displayedDomain = node.url;
+            else displayedDomain = node.domain;
             cyDomain.add({
                 group: "nodes",
                 data: {
-                    id: node.url,
+                    id: node.domain,
                     label: displayedDomain,
                 },
             });
