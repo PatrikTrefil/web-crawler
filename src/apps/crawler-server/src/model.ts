@@ -3,10 +3,9 @@ import {
     IWebsiteRecord,
     IWebsiteRecordUpdate,
     IWebPage,
-    IWebsiteRecordTemplate,
 } from "ts-types";
 import IModel from "./IModel";
-import neo4j, { Driver, Transaction, DateTime } from "neo4j-driver";
+import neo4j, { Driver, Transaction, DateTime, Integer } from "neo4j-driver";
 import "dotenv/config";
 
 export default class Model implements IModel {
@@ -59,7 +58,8 @@ export default class Model implements IModel {
                         url: resObj.url,
                         boundaryRegex: resObj.boundaryRegex,
                         label: resObj.label,
-                        periodicityInSeconds: resObj.periodicityInSeconds,
+                        periodicityInSeconds:
+                            resObj.periodicityInSeconds.toNumber(),
                         isActive: resObj.isActive,
                         tags: resObj.tags,
                         lastExecutionId: lastExecutionId,
@@ -84,13 +84,13 @@ export default class Model implements IModel {
         periodicityInSeconds = 0
     ): Promise<string> {
         const session = this.driver.session();
-        const params: IWebsiteRecordTemplate = {
+        const params = {
             url: url,
             boundaryRegex: boundaryRegex,
             label: label,
             isActive: isActive,
             tags: tags,
-            periodicityInSeconds: periodicityInSeconds,
+            periodicityInSeconds: neo4j.int(periodicityInSeconds),
         };
         let createdRecordId;
         try {
@@ -131,42 +131,43 @@ export default class Model implements IModel {
         )
             return this.getRecordById(id); // nothing to change
         const propertyChanges = []; // parts of the Cypher query
-        const stringRecordUpdate: {
+        const params: {
+            id: string;
             url?: string;
             boundaryRegex?: string;
-            periodicityInSeconds?: number;
+            periodicityInSeconds?: Integer;
             label?: string;
             isActive?: boolean;
             tags?: string[];
-        } = {};
+        } = { id: id };
         if (recordUpdate.url) {
             propertyChanges.push("url : $url");
-            stringRecordUpdate.url = recordUpdate.url;
+            params.url = recordUpdate.url;
         }
         if (recordUpdate.boundaryRegex) {
             propertyChanges.push("boundaryRegex : $boundaryRegex");
-            stringRecordUpdate.boundaryRegex = recordUpdate.boundaryRegex;
+            params.boundaryRegex = recordUpdate.boundaryRegex;
         }
-        if (recordUpdate.periodicityInSeconds) {
+        if (recordUpdate.periodicityInSeconds !== undefined) {
             propertyChanges.push(
                 "periodicityInSeconds : $periodicityInSeconds"
             );
-            stringRecordUpdate.periodicityInSeconds =
-                recordUpdate.periodicityInSeconds;
+            params.periodicityInSeconds = neo4j.int(
+                recordUpdate.periodicityInSeconds
+            );
         }
         if (recordUpdate.label) {
             propertyChanges.push("label : $label");
-            stringRecordUpdate.label = recordUpdate.label;
+            params.label = recordUpdate.label;
         }
         if (recordUpdate.isActive) {
             propertyChanges.push("isActive : $isActive");
-            stringRecordUpdate.isActive = recordUpdate.isActive;
+            params.isActive = recordUpdate.isActive;
         }
         if (recordUpdate.tags) {
             propertyChanges.push("tags : $tags");
-            stringRecordUpdate.tags = recordUpdate.tags;
+            params.tags = recordUpdate.tags;
         }
-        const params = { ...recordUpdate, id: id };
         const query =
             "MATCH (record: Record { id: $id }) SET record += { " +
             propertyChanges.join(", ") +
@@ -184,7 +185,8 @@ export default class Model implements IModel {
                     label: resObj.label,
                     isActive: resObj.isActive,
                     tags: resObj.tags,
-                    periodicityInSeconds: resObj.periodicityInSeconds,
+                    periodicityInSeconds:
+                        resObj.periodicityInSeconds.toNumber(),
                     lastExecutionId: resObj.lastExecutionId ?? null,
                 };
             } else {
