@@ -99,7 +99,7 @@ function RecordsPage() {
                 sortFunction={sortFunction}
             />
             <button
-                className="btn btn-success create-btn"
+                className="btn btn-success btn-left-down"
                 onClick={openCreateModal}
             >
                 Create record
