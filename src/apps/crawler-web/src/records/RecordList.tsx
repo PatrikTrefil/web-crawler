@@ -7,6 +7,7 @@ import { IWebsiteRecord } from "ts-types";
 import { Modal, ModalHeader, ModalBody } from "reactstrap";
 import EditRecord from "./EditRecord";
 import RecordDetails from "./RecordDetails";
+import { Link } from "react-router-dom";
 
 export function RecordList({
     itemsPerPage,
@@ -190,6 +191,12 @@ export function Page(props: {
                         <span className="text-secondary">({record.id})</span>
                     </div>
                     <div className="controls">
+                        <Link
+                            to={`/visualization/website/${record.lastExecutionId}`}
+                            className="btn btn-dark"
+                        >
+                            Visualize last crawl
+                        </Link>
                         <button
                             className="btn btn-success"
                             onClick={() => {

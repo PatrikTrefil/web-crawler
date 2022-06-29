@@ -3,6 +3,7 @@ import RecordsPage from "./records/RecordsPage";
 import NotFound from "./NotFound";
 import PageLayout from "./PageLayout";
 import ExecutionsPage from "./executions/ExecutionsPage";
+import CrawlVisualization from "./CrawlVisualization";
 
 export default function App() {
     return (
@@ -15,6 +16,10 @@ export default function App() {
                     />
                     <Route path="/records" element={<RecordsPage />} />
                     <Route path="/executions" element={<ExecutionsPage />} />
+                    <Route
+                        path="visualization/:visualizationMode/:crawlId"
+                        element={<CrawlVisualization />}
+                    />
                     <Route path="*" element={<NotFound />} />
                 </Route>
             </Routes>
