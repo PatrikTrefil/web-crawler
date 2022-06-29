@@ -58,6 +58,12 @@ export default function CrawlVisualization() {
                 backgroundColor: "#d63384",
             },
         },
+        {
+            selector: "node.domain",
+            style: {
+                backgroundColor: "#e37f78",
+            },
+        },
     ];
     const [cy, setCy] = useState<cytoscape.Core>();
     useEffect(() => {
@@ -158,6 +164,7 @@ export default function CrawlVisualization() {
                     id: node.domain,
                     label: displayedDomain,
                 },
+                classes: "domain",
             });
         }
         for (const node of uniqueDomainNodes) {
