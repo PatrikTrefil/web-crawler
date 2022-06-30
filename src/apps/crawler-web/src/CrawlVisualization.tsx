@@ -14,11 +14,13 @@ import { Modal, ModalHeader, ModalBody } from "reactstrap";
 cytoscape.use(coseBilkent);
 
 export default function CrawlVisualization() {
-    const { crawlId, visualizationMode } = useParams() as {
-        crawlId: string;
-        visualizationMode: "website" | "domain";
-    };
-    const [crawl, setCrawl] = useState<ICrawlExecution>();
+    const { crawlIdsString: crawlIdString, visualizationMode } =
+        useParams() as {
+            crawlIdsString: string;
+            visualizationMode: "website" | "domain";
+        };
+    const crawlIds = crawlIdString.split(",");
+    const [crawls, setCrawls] = useState<ICrawlExecution[]>();
     const containerRef = useRef<HTMLDivElement>(null);
     const styles = [
         {
@@ -100,19 +102,52 @@ export default function CrawlVisualization() {
         toggleDetailsModal();
     };
     const visualizeWebsite = (cyWebsite: cytoscape.Core) => {
-        if (!crawl || !cyWebsite) return;
-        cyWebsite.add({
-            group: "nodes",
-            data: { id: crawl.id, label: crawl.id },
-            classes: "crawlExecutionId",
+        if (!crawls || !cyWebsite) return;
+        for (const crawl of crawls)
+            cyWebsite.add({
+                group: "nodes",
+                data: { id: crawl.id, label: crawl.id },
+                classes: "crawlExecutionId",
+            });
+        const nodesFromAllCrawls: IWebPage[] = [];
+        for (const crawl of crawls) nodesFromAllCrawls.push(...crawl.nodes);
+
+        const nodesUsedForGraphing: IWebPage[] = []; // union of all nodes such that, each URL is represented by node from a crawl with the latest finish time
+        // secondarily, we sort by crawlTime, descending
+        nodesFromAllCrawls.sort((a, b) => {
+            if (!a.crawlTime && b.crawlTime) return 1;
+            if (a.crawlTime && !b.crawlTime) return -1;
+            if (!a.crawlTime && !b.crawlTime) return 0;
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            if (a.crawlTime > b.crawlTime) return -1;
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            if (a.crawlTime < b.crawlTime) return 1;
+            return 0;
         });
-        for (const node of crawl.nodes) {
+        // primarily, we want crawled nodes first
+        nodesFromAllCrawls.sort((a, b) => {
+            if (a.title !== undefined && b.title === undefined) return -1;
+            if (a.title === undefined && b.title !== undefined) return 1;
+            return 0;
+        });
+
+        for (const node of nodesFromAllCrawls) {
+            const alreadyExistingNode = nodesUsedForGraphing.find(
+                (displayedNode) => displayedNode.url === node.url
+            );
+            if (!alreadyExistingNode) nodesUsedForGraphing.push(node);
+        }
+        for (const node of nodesUsedForGraphing) {
             let displayedUrl: string;
+
             const urlLengthLimit = 45;
             if (node.url.length > urlLengthLimit)
                 displayedUrl =
                     node.url.substring(0, urlLengthLimit - 1) + "...";
             else displayedUrl = node.url;
+
             const webpage: IWebPage = {
                 url: node.url,
                 title: node.title,
@@ -128,15 +163,17 @@ export default function CrawlVisualization() {
                 classes: node.title ? "crawled" : "uncrawled",
             });
         }
-        cyWebsite.add({
-            group: "edges",
-            data: {
-                source: crawl.id,
-                target: crawl.startURL,
-            },
-        });
-        for (const node of crawl.nodes) {
-            for (const link of node.links) {
+        for (const crawl of crawls)
+            cyWebsite.add({
+                group: "edges",
+                data: {
+                    source: crawl.id,
+                    target: crawl.startURL,
+                },
+            });
+        for (const node of nodesUsedForGraphing) {
+            const setOfLinks = new Set(node.links);
+            for (const link of setOfLinks.values()) {
                 cyWebsite.add({
                     group: "edges",
                     data: {
@@ -150,15 +187,21 @@ export default function CrawlVisualization() {
         cyWebsite.on("tap", "node", nodeClickHandler);
     };
     const visualizeDomain = (cyDomain: cytoscape.Core) => {
-        if (!crawl || !cyDomain) return;
-        cyDomain.add({
-            group: "nodes",
-            data: { id: crawl.id, label: crawl.id },
-            classes: "crawlExecutionId",
-        });
-        const allDomainNodes = crawl.nodes.map((node) => {
-            return { ...node, domain: new URL(node.url).hostname }; // domain will potentially be "" (e.g. mailto:example@web.com)
-        });
+        if (!crawls || !cyDomain) return;
+        for (const crawl of crawls)
+            cyDomain.add({
+                group: "nodes",
+                data: { id: crawl.id, label: crawl.id },
+                classes: "crawlExecutionId",
+            });
+
+        const allDomainNodes = [];
+        for (const crawl of crawls)
+            allDomainNodes.push(
+                ...crawl.nodes.map((node) => {
+                    return { ...node, domain: new URL(node.url).hostname }; // domain will potentially be "" (e.g. mailto:example@web.com)
+                })
+            );
         const uniqueDomainNodes: typeof allDomainNodes = [];
         for (const node of allDomainNodes) {
             if (node.domain !== "") {
@@ -185,43 +228,53 @@ export default function CrawlVisualization() {
                 classes: "domain",
             });
         }
+
         for (const node of uniqueDomainNodes) {
-            for (const link of node.links) {
-                const target = new URL(link).hostname;
-                if (target !== "")
+            const setOfLinks = new Set(
+                node.links.map((link) => new URL(link).hostname)
+            );
+            console.log(setOfLinks);
+            for (const link of setOfLinks.values()) {
+                if (link !== "")
                     cyDomain.add({
                         group: "edges",
                         data: {
                             source: node.domain,
-                            target: target,
+                            target: link,
                         },
                     });
             }
         }
 
-        cyDomain.add({
-            group: "edges",
-            data: {
-                source: crawl.id,
-                target: new URL(crawl.startURL).hostname,
-            },
-        });
+        for (const crawl of crawls)
+            cyDomain.add({
+                group: "edges",
+                data: {
+                    source: crawl.id,
+                    target: new URL(crawl.startURL).hostname,
+                },
+            });
         applyLayout(cyDomain);
     };
     useEffect(() => {
         const getData = async () => {
-            setCrawl(await getCrawl(crawlId));
+            const newCrawlsPromises = [];
+            for (const crawlId of crawlIds) {
+                newCrawlsPromises.push(getCrawl(crawlId));
+            }
+            const newCrawls = await Promise.all(newCrawlsPromises);
+            setCrawls(newCrawls);
         };
         getData();
     }, []);
     if (visualizationMode === "domain")
         useEffect(() => {
             if (cy) visualizeDomain(cy);
-        }, [crawl]);
+        }, [crawls]);
     else if (visualizationMode === "website")
         useEffect(() => {
             if (cy) visualizeWebsite(cy);
-        }, [crawl]);
+        }, [crawls]);
 
     return (
         <>
@@ -229,7 +282,7 @@ export default function CrawlVisualization() {
                 reloadDocument
                 to={`/visualization/${
                     visualizationMode === "website" ? "domain" : "website"
-                }/${crawlId}`}
+                }/${crawlIdString}`}
                 className="btn btn-primary btn-left-down"
             >
                 Toggle website/domain mode
