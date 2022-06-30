@@ -6,7 +6,7 @@ import cytoscape from "cytoscape";
 import coseBilkent from "cytoscape-cose-bilkent";
 import { useEffect, useRef, useState } from "react";
 import { ICrawlExecution, IWebPage } from "ts-types";
-import { getCrawl } from "./api";
+import { getCrawl } from "../api";
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { Modal, ModalHeader, ModalBody } from "reactstrap";
@@ -173,7 +173,7 @@ export default function CrawlVisualization() {
             });
         for (const node of nodesUsedForGraphing) {
             const setOfLinks = new Set(node.links);
-            for (const link of setOfLinks.values()) {
+            setOfLinks.forEach((link) => {
                 cyWebsite.add({
                     group: "edges",
                     data: {
@@ -181,7 +181,7 @@ export default function CrawlVisualization() {
                         target: link,
                     },
                 });
-            }
+            });
         }
         applyLayout(cyWebsite);
         cyWebsite.on("tap", "node", nodeClickHandler);
@@ -233,8 +233,7 @@ export default function CrawlVisualization() {
             const setOfLinks = new Set(
                 node.links.map((link) => new URL(link).hostname)
             );
-            console.log(setOfLinks);
-            for (const link of setOfLinks.values()) {
+            setOfLinks.forEach((link) => {
                 if (link !== "")
                     cyDomain.add({
                         group: "edges",
@@ -243,7 +242,7 @@ export default function CrawlVisualization() {
                             target: link,
                         },
                     });
-            }
+            });
         }
 
         for (const crawl of crawls)

@@ -3,7 +3,7 @@ import RecordsPage from "./records/RecordsPage";
 import NotFound from "./NotFound";
 import PageLayout from "./PageLayout";
 import ExecutionsPage from "./executions/ExecutionsPage";
-import CrawlVisualization from "./CrawlVisualization";
+import CrawlVisualization from "./visualization/CrawlVisualization";
 
 export default function App() {
     return (
