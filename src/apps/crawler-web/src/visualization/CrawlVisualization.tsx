@@ -287,6 +287,18 @@ export default function CrawlVisualization() {
                 Toggle website/domain mode
             </Link>
             <div ref={containerRef} className="cy"></div>
+            <div className="position-fixed bottom-0 start-0 bg-primary m-3 p-3 rounded">
+                <ul className="mb-0 text-white pe-2 ps-3">
+                    <li>Pink nodes - crawled nodes</li>
+                    <li>
+                        Orange nodes - uncrawled (not within boundary regex)
+                    </li>
+                    <li>
+                        Purple nodes - execution (has one edge pointing to the
+                        starting node)
+                    </li>
+                </ul>
+            </div>
             <Modal
                 toggle={toggleDetailsModal}
                 isOpen={isDetailsModalOpen}
