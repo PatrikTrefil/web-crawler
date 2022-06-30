@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { deleteWebsiteRecord, startCrawl } from "../api";
 import ReactPaginate from "react-paginate";
 import { IWebsiteRecord } from "ts-types";
-import { Modal, ModalHeader, ModalBody } from "reactstrap";
+import { Modal, ModalHeader, ModalBody, Tooltip } from "reactstrap";
 import EditRecord from "./EditRecord";
 import RecordDetails from "./RecordDetails";
 import { Link } from "react-router-dom";
@@ -191,12 +191,7 @@ export function Page(props: {
                         <span className="text-secondary">({record.id})</span>
                     </div>
                     <div className="controls">
-                        <Link
-                            to={`/visualization/website/${record.lastExecutionId}`}
-                            className="btn btn-dark"
-                        >
-                            Visualize last crawl
-                        </Link>
+                        <VisualizeButton record={record} />
                         <button
                             className="btn btn-success"
                             onClick={() => {
@@ -234,4 +229,39 @@ export function Page(props: {
         );
     }
     return <div className="text-center">No records exist.</div>;
+}
+
+function VisualizeButton({ record }: { record: IWebsiteRecord }) {
+    const [isTooltipOpen, setIsTooltipOpen] = useState(false);
+    const toggleTooltip = () => {
+        setIsTooltipOpen(!isTooltipOpen);
+    };
+    return (
+        <>
+            <span className="d-inline-block" id={`visualize-link-${record.id}`}>
+                <Link
+                    to={
+                        record.lastExecutionId
+                            ? `/visualization/website/${record.lastExecutionId}`
+                            : ""
+                    }
+                    className={`btn btn-dark${
+                        record.lastExecutionId ? "" : " disabled"
+                    }`}
+                >
+                    Visualize last crawl
+                </Link>
+            </span>
+            {!record.lastExecutionId && (
+                <Tooltip
+                    isOpen={isTooltipOpen}
+                    toggle={toggleTooltip}
+                    target={`visualize-link-${record.id}`}
+                >
+                    This record does not have any executions yet (refresh this
+                    page to load new executions).
+                </Tooltip>
+            )}
+        </>
+    );
 }
