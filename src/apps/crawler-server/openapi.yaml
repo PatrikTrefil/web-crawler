@@ -17,17 +17,6 @@ paths:
           description: Name of field to sort by.
           schema:
             type: string
-            # ENUM?
-        # - in: query
-        #   name: limit
-        #   description: Maximum number of items in result (max 100; default = 100).
-        #   schema:
-        #     type: integer
-        # - in: query
-        #   name: offset
-        #   description: Offset from the beginning of the data (sorted based on sortBy parameter; default = 0).
-        #   schema:
-        #     type: integer
         - in: query
           name: filterByURL
           description: URL to filter by (exact match required).
@@ -52,10 +41,6 @@ paths:
               schema:
                 type: object
                 properties:
-                  # totalCount:
-                  #   type: integer
-                  #   description: Total count of the website records.
-                  #   example: 120
                   data:
                     type: array
                     description: Requested array of website record ids.
@@ -169,7 +154,8 @@ paths:
                 type: array
                 description: Array of all crawl ids.
                 items:
-                  type: uuid
+                  type: string
+                  format: uuid
   /crawls/{crawlId}:
     get:
       summary: Get a crawl with given crawlId
@@ -211,6 +197,7 @@ components:
           description: Unique identifier of the website record.
         url:
           type: string
+          format: uri
           description: URL of the webiste to crawl.
         boundaryRegex:
           type: string
@@ -240,6 +227,7 @@ components:
       properties:
         url:
           type: string
+          format: uri
           description: URL of the webiste to crawl.
         boundaryRegex:
           type: string
@@ -288,4 +276,5 @@ components:
                 type: array
                 items:
                   type: string
+                  format: uri
                   description: URL of target node.
