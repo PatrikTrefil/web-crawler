@@ -35,6 +35,11 @@ export default class ExecutionManager implements IExecutionManager {
             this.workers[i].on("message", async (data: ExecutionData) => {
                 console.log("Data received in execution manager");
                 console.log(data);
+                if (data === null) {
+                    // TODO: create an execution link and mark it as failed
+                    console.log("Crawl failed");
+                    return;
+                }
                 const record = await this.model.getRecordById(data.recordId);
                 if (record !== null) {
                     if (record?.lastExecutionId !== null)

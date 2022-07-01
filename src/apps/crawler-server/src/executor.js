@@ -71,6 +71,8 @@ class Executor {
             url: record.url,
             links: [],
         };
+        const maxHandledRequest = process.env.MAX_HANDLED_REQUESTS_PER_CRAWL;
+        let hasCrawlFailed = false;
         const requestQueue = await Apify.openRequestQueue(
             // every thread needs its own queue
             // we add queueCounter to the name, because we otherwise get an error: "Database connection is not open" (might be intentional or a bug)
@@ -101,10 +103,15 @@ class Executor {
             for (const url of absoluteUrls)
                 if (boundaryRegex.test(url)) {
                     console.log("Enque: " + url);
-                    await requestQueue.addRequest({
-                        url: url,
-                        userData: { fromWebPageURL: request.url },
-                    });
+                    const { handledRequestCount } =
+                        await requestQueue.getInfo();
+                    if (handledRequestCount >= maxHandledRequest)
+                        hasCrawlFailed = true;
+                    else
+                        await requestQueue.addRequest({
+                            url: url,
+                            userData: { fromWebPageURL: request.url },
+                        });
                 } else {
                     // make note of link going out of bounds (without crawled data)
                     crawlExecution.links.push({
@@ -123,6 +130,7 @@ class Executor {
 
         await crawler.run();
         requestQueue.drop();
+        if (hasCrawlFailed) return null;
         return crawlExecution;
     }
 }
