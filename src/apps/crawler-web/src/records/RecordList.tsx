@@ -242,7 +242,7 @@ function VisualizeButton({ record }: { record: IWebsiteRecord }) {
                 <Link
                     to={
                         record.lastExecutionId
-                            ? `/visualization/website/${record.lastExecutionId}`
+                            ? `/visualization/website/${record.id}`
                             : ""
                     }
                     className={`btn btn-dark${

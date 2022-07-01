@@ -17,7 +17,7 @@ export default function App() {
                     <Route path="/records" element={<RecordsPage />} />
                     <Route path="/executions" element={<ExecutionsPage />} />
                     <Route
-                        path="visualization/:visualizationMode/:crawlIdsString"
+                        path="visualization/:visualizationMode/:recordIdsString"
                         element={<CrawlVisualization />}
                     />
                     <Route path="*" element={<NotFound />} />

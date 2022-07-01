@@ -6,7 +6,7 @@ import cytoscape from "cytoscape";
 import coseBilkent from "cytoscape-cose-bilkent";
 import { useEffect, useRef, useState } from "react";
 import { ICrawlExecution, IWebPage } from "ts-types";
-import { getCrawl } from "../api";
+import { getCrawl, getRecord } from "../api";
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { Modal, ModalHeader, ModalBody } from "reactstrap";
@@ -14,14 +14,17 @@ import { Modal, ModalHeader, ModalBody } from "reactstrap";
 cytoscape.use(coseBilkent);
 
 export default function CrawlVisualization() {
-    const { crawlIdsString: crawlIdString, visualizationMode } =
-        useParams() as {
-            crawlIdsString: string;
-            visualizationMode: "website" | "domain";
-        };
-    const crawlIds = crawlIdString.split(",");
+    const { recordIdsString, visualizationMode } = useParams() as {
+        recordIdsString: string;
+        visualizationMode: "website" | "domain";
+    };
+    const recordIds = recordIdsString.split(",");
     const [crawls, setCrawls] = useState<ICrawlExecution[]>();
     const containerRef = useRef<HTMLDivElement>(null);
+    const [updateMode, setUpdateMode] = useState<"static" | "live">("static");
+    const [intervalId, setIntervalId] =
+        useState<ReturnType<typeof setInterval>>();
+    const updateIntervalLengthInSeconds = 10;
     const styles = [
         {
             selector: "node[label]",
@@ -103,6 +106,7 @@ export default function CrawlVisualization() {
     };
     const visualizeWebsite = (cyWebsite: cytoscape.Core) => {
         if (!crawls || !cyWebsite) return;
+        cyWebsite.nodes().remove();
         for (const crawl of crawls)
             cyWebsite.add({
                 group: "nodes",
@@ -255,17 +259,37 @@ export default function CrawlVisualization() {
             });
         applyLayout(cyDomain);
     };
+    const getCrawls = async () => {
+        const recordsPromises = [];
+        for (const recordId of recordIds) {
+            recordsPromises.push(getRecord(recordId));
+        }
+        const records = await Promise.all(recordsPromises);
+        const newCrawlsPromises = [];
+        for (const record of records) {
+            if (record.lastExecutionId)
+                // n.b. we ignore those that don't have any executions
+                newCrawlsPromises.push(getCrawl(record.lastExecutionId));
+        }
+        const newCrawls = await Promise.all(newCrawlsPromises);
+        setCrawls(newCrawls);
+    };
     useEffect(() => {
-        const getData = async () => {
-            const newCrawlsPromises = [];
-            for (const crawlId of crawlIds) {
-                newCrawlsPromises.push(getCrawl(crawlId));
-            }
-            const newCrawls = await Promise.all(newCrawlsPromises);
-            setCrawls(newCrawls);
-        };
-        getData();
+        getCrawls();
     }, []);
+    useEffect(() => {
+        if (updateMode === "live") {
+            getCrawls();
+            const intervalId = setInterval(
+                getCrawls,
+                updateIntervalLengthInSeconds * 1000
+            );
+            setIntervalId(intervalId);
+            return () => clearInterval(intervalId);
+        } else if (updateMode === "static") {
+            if (intervalId) clearInterval(intervalId);
+        }
+    }, [updateMode]);
     if (visualizationMode === "domain")
         useEffect(() => {
             if (cy) visualizeDomain(cy);
@@ -281,7 +305,7 @@ export default function CrawlVisualization() {
                 reloadDocument
                 to={`/visualization/${
                     visualizationMode === "website" ? "domain" : "website"
-                }/${crawlIdString}`}
+                }/${recordIdsString}`}
                 className="btn btn-primary btn-left-down"
             >
                 Toggle website/domain mode
@@ -296,6 +320,29 @@ export default function CrawlVisualization() {
                     <li>
                         Purple nodes - execution (has one edge pointing to the
                         starting node)
+                    </li>
+                    <li>
+                        <form
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                            }}
+                        >
+                            <label htmlFor="updateMode">Update mode: </label>
+                            <select
+                                className="form-select d-inline-block w-auto ms-2"
+                                name="updateMode"
+                                id="updateMode"
+                                value={updateMode}
+                                onChange={(e) => {
+                                    setUpdateMode(
+                                        e.target.value as "static" | "live"
+                                    );
+                                }}
+                            >
+                                <option value="static">Static</option>
+                                <option value="live">Live</option>
+                            </select>
+                        </form>
                     </li>
                 </ul>
             </div>
