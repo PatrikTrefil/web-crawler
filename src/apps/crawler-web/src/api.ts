@@ -117,5 +117,9 @@ export async function getCrawl(crawlId: string): Promise<ICrawlExecution> {
         throw new Error(
             `This is an HTTP error: The status is ${response.status}`
         );
-    return (await response.json()) as ICrawlExecution;
+    const almostCrawl = await response.json();
+    for (const node of almostCrawl.nodes)
+        if (node.crawlTime) node.crawlTime = new Date(node.crawlTime);
+    const crawl = almostCrawl;
+    return crawl as ICrawlExecution;
 }
