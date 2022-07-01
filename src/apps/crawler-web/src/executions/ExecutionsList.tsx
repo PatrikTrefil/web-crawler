@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { ICrawlExecution } from "ts-types";
+import { Modal, ModalHeader, ModalBody } from "reactstrap";
 import ReactPaginate from "react-paginate";
 
 export default function ExecutionsList({
@@ -86,6 +87,34 @@ export function Page(props: {
     errorMsgExecutionsLoading: string;
     isLoading: boolean;
 }) {
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const [executionForDetails, setExecutionForDetails] =
+        useState<ICrawlExecution | null>();
+    const toggleDetailsModal = () => {
+        setIsDetailsModalOpen(!isDetailsModalOpen);
+    };
+    const getCrawlStartTime = (crawlExecution: ICrawlExecution) => {
+        const crawledNodes = crawlExecution.nodes.filter(
+            (node) => node.crawlTime !== undefined
+        );
+        const crawlTimes = crawledNodes.map((node) => {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            return node.crawlTime!.getTime();
+        });
+
+        return new Date(Math.min(...crawlTimes)).toString();
+    };
+    const getCrawlEndTime = (crawlExecution: ICrawlExecution) => {
+        const crawledNodes = crawlExecution.nodes.filter(
+            (node) => node.crawlTime !== undefined
+        );
+        const crawlTimes = crawledNodes.map((node) => {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            return node.crawlTime!.getTime();
+        });
+
+        return new Date(Math.max(...crawlTimes)).toString();
+    };
     if (props.errorMsgExecutionsLoading)
         return (
             <div className="alert alert-danger">
@@ -103,12 +132,48 @@ export function Page(props: {
                         {execution.startURL}{" "}
                         <span className="text-secondary">({execution.id})</span>
                     </div>
+                    <div>
+                        <button
+                            className="btn btn-primary"
+                            onClick={() => {
+                                setExecutionForDetails(execution);
+                                toggleDetailsModal();
+                            }}
+                        >
+                            Details
+                        </button>
+                    </div>
                 </li>
             );
         });
         return (
             <>
                 <ul className="record-list list-group">{recordList}</ul>
+                <Modal isOpen={isDetailsModalOpen} toggle={toggleDetailsModal}>
+                    <ModalHeader toggle={toggleDetailsModal}>
+                        Execution details
+                    </ModalHeader>
+                    <ModalBody>
+                        {executionForDetails ? (
+                            <ul>
+                                <li>ID: {executionForDetails.id}</li>
+                                <li>
+                                    Start URL: {executionForDetails.startURL}
+                                </li>
+                                <li>
+                                    Start time:{" "}
+                                    {getCrawlStartTime(executionForDetails)}
+                                </li>
+                                <li>
+                                    End time:{" "}
+                                    {getCrawlEndTime(executionForDetails)}
+                                </li>
+                            </ul>
+                        ) : (
+                            <div>No execution selected</div>
+                        )}
+                    </ModalBody>
+                </Modal>
             </>
         );
     }
