@@ -7,6 +7,7 @@ import {
 
 const apiUrl = "http://localhost:8080/api";
 
+// #region website records
 /**
  * @returns id of the created record
  * @throws Error if the request fails
@@ -89,6 +90,9 @@ export async function deleteWebsiteRecord(recordId: string): Promise<void> {
         );
 }
 
+// #endregion
+// #region crawls
+
 /**
  * @throws Error if the request fails
  */
@@ -125,3 +129,5 @@ export async function getCrawl(crawlId: string): Promise<ICrawlExecution> {
     const crawl = almostCrawl;
     return crawl as ICrawlExecution;
 }
+
+// #endregion
