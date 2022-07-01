@@ -55,12 +55,13 @@ export async function getRecord(recordId: string): Promise<IWebsiteRecord> {
 }
 
 /**
+ * @returns updated version of the website record
  * @throws Error if the request fails
  */
 export async function updateWebsiteRecord(
     recordId: string,
     recordUpdate: IWebsiteRecordUpdate
-): Promise<void> {
+): Promise<IWebsiteRecord> {
     const response = await fetch(apiUrl + `/records/${recordId}`, {
         method: "PUT",
         headers: {
@@ -72,6 +73,7 @@ export async function updateWebsiteRecord(
         throw new Error(
             `This is an HTTP error: The status is ${response.status}`
         );
+    return (await response.json()) as IWebsiteRecord;
 }
 
 /**

@@ -65,8 +65,12 @@ export default function EditRecord({
                 : tagsString.split(",").map((tag) => tag.trim());
         if (tags !== recordToEdit.tags) recordUpdate.tags = tags;
 
+        let editedRecord: IWebsiteRecord;
         try {
-            await updateWebsiteRecord(recordToEdit.id, recordUpdate);
+            editedRecord = await updateWebsiteRecord(
+                recordToEdit.id,
+                recordUpdate
+            );
         } catch (e) {
             if (e instanceof Error) setErrorMessage(e.message);
             else setErrorMessage("Unknown error");
@@ -77,16 +81,7 @@ export default function EditRecord({
         const withDeletedEditedRecord = records.filter(
             (record) => record.id !== recordToEdit.id
         );
-        const editedRecord: IWebsiteRecord = {
-            id: recordToEdit.id,
-            url: url,
-            label: label,
-            boundaryRegex: boundaryRegex,
-            periodicityInSeconds: periodicityInSeconds,
-            isActive: isActive,
-            tags: tags,
-            lastExecutionId: recordToEdit.lastExecutionId,
-        };
+
         setRecordToEdit(editedRecord);
         setRecords([...withDeletedEditedRecord, editedRecord]);
         afterSubmit();

@@ -209,7 +209,7 @@ api.put(
                 await executionManager.replanExecutionsOfRecord(
                     req.params.recordId
                 );
-            res.sendStatus(204);
+            res.json(result);
         } else res.sendStatus(404);
     }
 );

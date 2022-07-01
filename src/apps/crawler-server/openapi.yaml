@@ -117,8 +117,12 @@ paths:
             schema:
               $ref: "#/components/schemas/websiteRecordChange"
       responses:
-        "204":
+        "200":
           description: Website record updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/websiteRecord"
         "404":
           description: Website record with given recordId not found.
     delete:
