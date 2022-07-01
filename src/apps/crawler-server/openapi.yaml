@@ -180,16 +180,14 @@ components:
     websiteRecord:
       type: object
       required:
-        [
-          id,
-          url,
-          boundaryRegex,
-          periodicityInSeconds,
-          label,
-          isActive,
-          tags,
-          lastExecutionId,
-        ]
+        - id
+        - url
+        - boundaryRegex
+        - periodicityInSeconds
+        - label
+        - isActive
+        - tags
+        - lastExecutionId
       properties:
         id:
           type: string
@@ -220,6 +218,7 @@ components:
             example: "books"
         lastExecutionId:
           type: string
+          format: uuid
           description: Id of the last execution of the crawl described in the website record.
     # schema for representing creation or update of a website record
     websiteRecordChange:
@@ -263,7 +262,9 @@ components:
           type: array
           items:
             type: object
-            required: ["url", "links"]
+            required:
+              - url
+              - links
             properties:
               url:
                 type: string
