@@ -156,6 +156,19 @@ paths:
           description: The crawl will start as soon as possible.
         "404":
           description: Not found.
+  /crawls:
+    get:
+      summary: Get a list of all crawl ids.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                description: Array of all crawl ids.
+                items:
+                  type: uuid
   /crawls/{crawlId}:
     get:
       summary: Get a crawl with given crawlId
