@@ -59,7 +59,8 @@ paths:
                   data:
                     type: array
                     description: Requested array of website record ids.
-                    items: { $ref: "#/components/schemas/websiteRecord" }
+                    items:
+                      $ref: "#/components/schemas/websiteRecord"
   /records/create:
     post:
       summary: Create a new website record
