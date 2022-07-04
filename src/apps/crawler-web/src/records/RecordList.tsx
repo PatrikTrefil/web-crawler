@@ -177,6 +177,8 @@ export function Page(props: {
         </Modal>
     );
 
+    const [activeSelection, setActiveSelection] = useState<string[]>([]);
+
     if (props.error)
         return <div className="alert alert-danger">{props.error}</div>;
 
@@ -187,14 +189,40 @@ export function Page(props: {
             return (
                 <li className="list-group-item" key={record.id}>
                     <div>
-                        {record.label}{" "}
-                        <span className="text-secondary">({record.id})</span>
+                        <span>
+                            <input
+                                type="checkbox"
+                                onChange={(e) => {
+                                    if (e.target.checked) {
+                                        const newSelection = [
+                                            ...activeSelection,
+                                            record.id,
+                                        ];
+                                        setActiveSelection(newSelection);
+                                    } else
+                                        setActiveSelection(
+                                            activeSelection.filter(
+                                                (id) => id !== record.id
+                                            )
+                                        );
+                                }}
+                                checked={activeSelection.includes(record.id)}
+                            />
+                        </span>
+                        <span>
+                            {" "}
+                            {record.label}{" "}
+                            <span className="text-secondary">
+                                ({record.id})
+                            </span>
+                        </span>
                     </div>
                     <div className="controls">
                         <VisualizeButton record={record} />
                         <button
                             className="btn btn-success"
-                            onClick={() => {
+                            onClick={(e) => {
+                                e.preventDefault();
                                 startCrawl(record.id);
                             }}
                         >
@@ -202,7 +230,8 @@ export function Page(props: {
                         </button>
                         <button
                             className="btn btn-primary"
-                            onClick={() => {
+                            onClick={(e) => {
+                                e.preventDefault();
                                 setSelectedRecordForDetails(record);
                                 toggleDetailModal();
                             }}
@@ -211,7 +240,8 @@ export function Page(props: {
                         </button>
                         <button
                             className="btn btn-danger"
-                            onClick={async () => {
+                            onClick={async (e) => {
+                                e.preventDefault();
                                 await handleDelete(record.id);
                             }}
                         >
@@ -223,7 +253,22 @@ export function Page(props: {
         });
         return (
             <>
-                <ul className="record-list list-group">{recordList}</ul>
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        window.location.href = `/visualization/website/${activeSelection.join(
+                            ","
+                        )}`;
+                    }}
+                >
+                    <ul className="record-list list-group">{recordList}</ul>
+                    <button
+                        className="btn btn-primary position-fixed bottom-0 start-0 m-3"
+                        type="submit"
+                    >
+                        Visualize selected items
+                    </button>
+                </form>
                 {detailsModal}
             </>
         );
