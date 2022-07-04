@@ -306,7 +306,8 @@ export default function CrawlVisualization() {
                 to={`/visualization/${
                     visualizationMode === "website" ? "domain" : "website"
                 }/${recordIdsString}`}
-                className="btn btn-primary btn-left-down"
+                className="btn btn-primary position-fixed bottom-0 end-0 m-3"
+                style={{ zIndex: 1 }}
             >
                 Toggle website/domain mode
             </Link>
