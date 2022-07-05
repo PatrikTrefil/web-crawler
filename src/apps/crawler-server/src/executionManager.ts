@@ -42,7 +42,9 @@ export default class ExecutionManager implements IExecutionManager {
                 const record = await this.model.getRecordById(data.recordId);
                 if (record !== null) {
                     if (record?.lastExecutionId !== null)
-                        this.model.deleteExecution(record.lastExecutionId);
+                        await this.model.deleteExecution(
+                            record.lastExecutionId
+                        );
                     const recordWebPageLink = data.links.find(
                         (link) => link.fromWebPageURL === null
                     );
