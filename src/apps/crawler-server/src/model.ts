@@ -160,7 +160,7 @@ export default class Model implements IModel {
             propertyChanges.push("label : $label");
             params.label = recordUpdate.label;
         }
-        if (recordUpdate.isActive) {
+        if (recordUpdate.isActive !== undefined) {
             propertyChanges.push("isActive : $isActive");
             params.isActive = recordUpdate.isActive;
         }
