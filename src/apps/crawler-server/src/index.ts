@@ -38,6 +38,7 @@ app.use(function logRequests(req: Request, _, next: NextFunction) {
 const api = express.Router();
 app.use("/api", api);
 
+// #region Website records
 api.get(
     "/records",
     query("filterByURL").optional().isURL(),
@@ -233,6 +234,9 @@ api.get(
     }
 );
 
+// #endregion
+// #region Crawls
+
 api.get("/crawls", async (req: Request, res: Response) => {
     const crawlIds = await model.getExecutionIds();
     res.json(crawlIds);
@@ -246,6 +250,8 @@ api.get(
         else res.sendStatus(404);
     }
 );
+
+// #endregion
 
 app.listen(port, () => {
     console.log(`crawler-server listening on port ${port}`);
