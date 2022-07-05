@@ -192,24 +192,24 @@ api.put(
         };
         if (body.periodicityInSeconds)
             recordUpdate.periodicityInSeconds = body.periodicityInSeconds;
-        const result = await model.updateRecord(
+        const updatedRecord = await model.updateRecord(
             req.params.recordId,
             recordUpdate
         );
-        if (result) {
-            if (recordUpdate.isActive)
+        if (updatedRecord) {
+            if (
+                recordUpdate.isActive ||
+                (recordUpdate.periodicityInSeconds !== undefined &&
+                    updatedRecord.isActive)
+            )
                 await executionManager.startExecutionsOfRecord(
                     req.params.recordId
                 );
-            else
+            else if (!recordUpdate.isActive)
                 await executionManager.stopExecutionsOfRecord(
                     req.params.recordId
                 );
-            if (recordUpdate.periodicityInSeconds)
-                await executionManager.replanExecutionsOfRecord(
-                    req.params.recordId
-                );
-            res.json(result);
+            res.json(updatedRecord);
         } else res.sendStatus(404);
     }
 );
@@ -228,7 +228,7 @@ api.delete(
 api.get(
     "/records/:recordId([0-9a-zA-Z-]+)/start",
     async (req: Request, res: Response) => {
-        await executionManager.startExecutionsOfRecord(req.params.recordId);
+        await executionManager.hardStartOfExecution(req.params.recordId);
         res.sendStatus(202);
     }
 );

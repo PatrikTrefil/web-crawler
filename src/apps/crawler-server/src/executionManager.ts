@@ -5,7 +5,6 @@ import amqp from "amqplib/callback_api";
 import { Worker } from "worker_threads";
 import IModel from "./IModel";
 import { ToadScheduler, SimpleIntervalJob, Task } from "toad-scheduler";
-import { IWebsiteRecord } from "ts-types";
 
 type LinkData = {
     fromWebPageURL: string;
@@ -47,7 +46,7 @@ export default class ExecutionManager implements IExecutionManager {
                     const recordWebPageLink = data.links.find(
                         (link) => link.fromWebPageURL === null
                     );
-                    if (!recordWebPageLink) throw "Record not found";
+                    if (!recordWebPageLink) throw new Error("Record not found");
                     const executionId = await this.model.createExecutionLink(
                         data.recordId,
                         recordWebPageLink!.toWebPageURL,
@@ -68,7 +67,8 @@ export default class ExecutionManager implements IExecutionManager {
             });
         }
     }
-    enqueueCrawl(record: IWebsiteRecord) {
+    private async enqueueCrawl(recordId: string) {
+        const record = await this.model.getRecordById(recordId);
         // send to work queue
         amqp.connect(
             `amqp://${process.env.RABBITMQ_DEFAULT_USER}:${process.env.RABBITMQ_DEFAULT_PASS}@${process.env.RABBITMQ_HOSTNAME}:${process.env.RABBITMQ_PORT}`,
@@ -95,42 +95,55 @@ export default class ExecutionManager implements IExecutionManager {
             }
         );
     }
-    async startExecutionsOfRecord(recordId: string): Promise<void> {
+    public async hardStartOfExecution(recordId: string): Promise<void> {
         const record = await this.model.getRecordById(recordId);
-        if (!record) throw "Not found";
-
-        this.enqueueCrawl(record);
-        this.planExecutionOfRecord(record);
+        if (!record) throw new Error("Not found");
+        if (record.isActive) {
+            console.log(
+                "hard start of execution for record id: %s will call standard start",
+                recordId
+            );
+            await this.startExecutionsOfRecord(record.id);
+        } else {
+            console.log(
+                "hard start of execution for record id: %s will result in a single crawl",
+                recordId
+            );
+            await this.enqueueCrawl(recordId);
+        }
     }
-    async stopExecutionsOfRecord(recordId: string): Promise<void> {
+    public async stopExecutionsOfRecord(recordId: string): Promise<void> {
         this.scheduler.removeById(recordId);
     }
-    async replanExecutionsOfRecord(recordId: string): Promise<void> {
+    public async startExecutionsOfRecord(recordId: string): Promise<void> {
         this.scheduler.removeById(recordId);
-        const record = await this.model.getRecordById(recordId);
-        if (record !== null) this.planExecutionOfRecord(record);
-    }
-    private planExecutionOfRecord(record: IWebsiteRecord) {
-        if (record.periodicityInSeconds === 0) return;
 
-        const crawlTask = new Task("enqueue crawl for recordId", () =>
-            this.enqueueCrawl(record)
-        );
-        const job = new SimpleIntervalJob(
-            {
-                seconds: record.periodicityInSeconds,
-            },
-            crawlTask,
-            record.id
-        );
-        this.scheduler.addSimpleIntervalJob(job);
+        const record = await this.model.getRecordById(recordId);
+        if (!record) throw new Error("Not found");
+
+        await this.enqueueCrawl(recordId);
+
+        if (record.periodicityInSeconds > 0) {
+            const crawlTask = new Task(
+                "enqueue crawl for recordId",
+                async () => await this.enqueueCrawl(recordId)
+            );
+            const job = new SimpleIntervalJob(
+                {
+                    seconds: record.periodicityInSeconds,
+                },
+                crawlTask,
+                record.id
+            );
+            this.scheduler.addSimpleIntervalJob(job);
+        }
     }
-    async startExecutionsForAllActiveRecords() {
+    public async startExecutionsForAllActiveRecords(): Promise<void> {
         const recordIds = await this.model.getRecordIds();
         for (const recordId of recordIds) {
             const record = await this.model.getRecordById(recordId);
             if (record !== null && record.isActive)
-                this.planExecutionOfRecord(record);
+                this.startExecutionsOfRecord(record.id);
         }
     }
 }
