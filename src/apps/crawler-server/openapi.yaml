@@ -293,3 +293,7 @@ components:
                   type: string
                   format: uri
                   description: URL of target node.
+              sourceRecordId:
+                type: string
+                format: uuid
+                description: ID of the record on which this crawl was based.
