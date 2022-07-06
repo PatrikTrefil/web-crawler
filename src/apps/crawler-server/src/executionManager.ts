@@ -144,7 +144,11 @@ export default class ExecutionManager implements IExecutionManager {
         const recordIds = await this.model.getRecordIds();
         for (const recordId of recordIds) {
             const record = await this.model.getRecordById(recordId);
-            if (record !== null && record.isActive)
+            if (
+                record !== null &&
+                record.isActive &&
+                record.periodicityInSeconds > 0
+            )
                 this.startExecutionsOfRecord(record.id);
         }
     }
