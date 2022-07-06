@@ -15,9 +15,9 @@ export default function FilterExecutions({
     useEffect(() => {
         if (recordFilter === "") setFilteredExecutions(executions);
         else {
-            const executionsCopy = [...executions];
-            // TODO: need to have some connection between executions and records to make this filtering work
-            // executionsCopy.filter((execution) => {});
+            const executionsCopy = executions.filter(
+                (execution) => execution.sourceRecordId === recordFilter
+            );
             setFilteredExecutions(executionsCopy);
         }
     }, [recordFilter, executions]);
@@ -29,6 +29,7 @@ export default function FilterExecutions({
                     id="recordFilter"
                     name="recordFilter"
                     onChange={(e) => setRecordFilter(e.target.value)}
+                    value={recordFilter}
                     className="form-select"
                 >
                     <option value="">-</option>
