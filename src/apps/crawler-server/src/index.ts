@@ -245,8 +245,14 @@ api.get(
     "/crawls/:crawlId([0-9a-zA-Z-]+)",
     async (req: Request, res: Response) => {
         const crawl = await model.getExecution(req.params.crawlId);
-        if (crawl) res.json(crawl);
-        else res.sendStatus(404);
+        if (crawl) {
+            const newNodes = crawl.nodes.map((node) => {
+                if (node.crawlTime)
+                    return { ...node, crawlTime: node.crawlTime.toISOString() }; // overwrite crawlTime to ISO string
+                return node;
+            });
+            res.json({ ...crawl, nodes: newNodes });
+        } else res.sendStatus(404);
     }
 );
 
