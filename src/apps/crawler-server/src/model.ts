@@ -169,25 +169,28 @@ export default class Model implements IModel {
             params.tags = recordUpdate.tags;
         }
         const query =
-            "MATCH (record: Record { id: $id }) SET record += { " +
+            `MATCH (record: Record { id: $id })
+             OPTIONAL MATCH (record)-[execution:Execution]->(:WebPage)
+             SET record += { ` +
             propertyChanges.join(", ") +
-            " } RETURN record";
+            " } RETURN record, execution.id";
         const session = this.driver.session();
         let updatedRecord;
         try {
             const result = await session.run(query, params);
             if (result.records.length > 0) {
-                const resObj = result.records[0].get(0).properties;
+                const resRecordObj = result.records[0].get("record").properties;
+                const lastExecutionId = result.records[0].get("execution.id");
                 updatedRecord = {
-                    id: resObj.id,
-                    url: resObj.url,
-                    boundaryRegex: resObj.boundaryRegex,
-                    label: resObj.label,
-                    isActive: resObj.isActive,
-                    tags: resObj.tags,
+                    id: resRecordObj.id,
+                    url: resRecordObj.url,
+                    boundaryRegex: resRecordObj.boundaryRegex,
+                    label: resRecordObj.label,
+                    isActive: resRecordObj.isActive,
+                    tags: resRecordObj.tags,
                     periodicityInSeconds:
-                        resObj.periodicityInSeconds.toNumber(),
-                    lastExecutionId: resObj.lastExecutionId ?? null,
+                        resRecordObj.periodicityInSeconds.toNumber(),
+                    lastExecutionId: lastExecutionId,
                 };
             } else {
                 updatedRecord = null;
