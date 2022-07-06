@@ -190,9 +190,8 @@ api.put(
             label: body.label,
             isActive: body.isActive,
             tags: body.tags,
+            periodicityInSeconds: body.periodicityInSeconds,
         };
-        if (body.periodicityInSeconds)
-            recordUpdate.periodicityInSeconds = body.periodicityInSeconds;
         const updatedRecord = await model.updateRecord(
             req.params.recordId,
             recordUpdate
