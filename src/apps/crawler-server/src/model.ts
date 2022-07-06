@@ -431,14 +431,14 @@ export default class Model implements IModel {
         const session = this.driver.session();
         let execution: ICrawlExecution | null;
         try {
-            const startURLResult = await session.run(
-                `MATCH (:Record)-[:Execution { id: $crawlExecutionId }]->(webPage:WebPage) RETURN webPage.url`,
+            const startURLAndSourceRecordResult = await session.run(
+                `MATCH (record:Record)-[:Execution { id: $crawlExecutionId }]->(webPage:WebPage) RETURN webPage.url, record.id`,
                 {
                     crawlExecutionId: crawlExecutionId,
                 }
             );
             // no link of type Execution with crawlExecutionId was found
-            if (startURLResult.records.length === 0) {
+            if (startURLAndSourceRecordResult.records.length === 0) {
                 session.close();
                 return null;
             }
@@ -517,7 +517,10 @@ export default class Model implements IModel {
             execution = {
                 id: crawlExecutionId,
                 nodes: unionWithUniqueUrl,
-                startURL: startURLResult.records[0].get("webPage.url"),
+                startURL:
+                    startURLAndSourceRecordResult.records[0].get("webPage.url"),
+                sourceRecordId:
+                    startURLAndSourceRecordResult.records[0].get("record.id"),
             };
         } catch (e) {
             session.close();
