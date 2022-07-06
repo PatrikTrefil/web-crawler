@@ -158,6 +158,10 @@ export function Page(props: {
                             <ul>
                                 <li>ID: {executionForDetails.id}</li>
                                 <li>
+                                    Source record:{" "}
+                                    {executionForDetails.sourceRecordId}
+                                </li>
+                                <li>
                                     Start URL: {executionForDetails.startURL}
                                 </li>
                                 <li>
