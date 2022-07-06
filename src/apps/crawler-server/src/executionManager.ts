@@ -26,12 +26,12 @@ export default class ExecutionManager implements IExecutionManager {
         this.scheduler = new ToadScheduler();
         this.model = model;
         this.workers = new Array<Worker>(workerCount);
-        for (let i = 0; i < workerCount; i++) {
-            this.workers[i] = new Worker("./src/executor.js");
-            this.workers[i].on("exit", (code) => {
+        this.workers.fill(new Worker("./src/executor.js"));
+        for (const worker of this.workers) {
+            worker.on("exit", (code) => {
                 if (code !== 0) throw "Worker exited with code " + code;
             });
-            this.workers[i].on("message", async (data: ExecutionData) => {
+            worker.on("message", async (data: ExecutionData) => {
                 console.log("Data received in execution manager");
                 console.log(data);
                 if (data === null) {
