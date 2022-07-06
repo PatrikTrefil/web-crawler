@@ -29,9 +29,8 @@ export function RecordList({
     sortFunction: // eslint-disable-next-line no-unused-vars
     ((a: IWebsiteRecord, b: IWebsiteRecord) => number) | undefined;
 }) {
-    const [currentlyDisplayedRecords, setCurrentlyDisplayedRecords] = useState<
-        Array<IWebsiteRecord>
-    >([]);
+    const [currentlyDisplayedRecordIds, setCurrentlyDisplayedRecordIds] =
+        useState<string[]>([]);
 
     const [pageCount, setPageCount] = useState(0);
     const [itemOffset, setItemOffset] = useState(0);
@@ -59,7 +58,9 @@ export function RecordList({
         const endOffset = itemOffset + itemsPerPage;
         const recordsCopy = [...records];
         recordsCopy.sort(sortFunction);
-        setCurrentlyDisplayedRecords(recordsCopy.slice(itemOffset, endOffset));
+        setCurrentlyDisplayedRecordIds(
+            recordsCopy.slice(itemOffset, endOffset).map((record) => record.id)
+        );
     }, [records, isLoading, itemOffset, itemsPerPage, sortFunction]);
 
     const handlePageClick = (selectedItem: { selected: number }) => {
@@ -70,7 +71,16 @@ export function RecordList({
     return (
         <>
             <Page
-                recordsOfPage={currentlyDisplayedRecords}
+                recordsOfPage={
+                    currentlyDisplayedRecordIds
+                        .map((recordId) =>
+                            records.find((record) => record.id === recordId)
+                        )
+                        .filter(
+                            (recordOrUndefined) =>
+                                recordOrUndefined !== undefined
+                        ) as IWebsiteRecord[]
+                }
                 records={records}
                 setRecords={setRecords}
                 error={error}
@@ -123,8 +133,8 @@ export function Page(props: {
     };
 
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-    const [selectedRecordForDetails, setSelectedRecordForDetails] =
-        useState<IWebsiteRecord | null>();
+    const [idOfSelectedRecordForDetails, setIdOfSelectedRecordForDetails] =
+        useState<string>();
     const [isDetailsModalInEditMode, setIsDetailsModalInEditMode] =
         useState(false);
     const toggleEditMode = () => {
@@ -150,7 +160,7 @@ export function Page(props: {
                 Details
             </ModalHeader>
             <ModalBody>
-                {selectedRecordForDetails && !isDetailsModalInEditMode && (
+                {idOfSelectedRecordForDetails && !isDetailsModalInEditMode && (
                     <>
                         <button
                             className="btn btn-info"
@@ -159,20 +169,22 @@ export function Page(props: {
                             Edit
                         </button>
                         <RecordDetails
-                            recordToDisplay={selectedRecordForDetails}
+                            recordToDisplay={props.records.find(
+                                (record) =>
+                                    record.id === idOfSelectedRecordForDetails
+                            )}
                         />
                     </>
                 )}
-                {selectedRecordForDetails && isDetailsModalInEditMode && (
+                {idOfSelectedRecordForDetails && isDetailsModalInEditMode && (
                     <EditRecord
-                        recordToEdit={selectedRecordForDetails}
-                        setRecordToEdit={setSelectedRecordForDetails}
+                        idOfRecordToEdit={idOfSelectedRecordForDetails}
                         records={props.records}
                         setRecords={props.setRecords}
                         afterSubmit={toggleEditMode}
                     />
                 )}
-                {!selectedRecordForDetails && <div>No record selected</div>}
+                {!idOfSelectedRecordForDetails && <div>No record selected</div>}
             </ModalBody>
         </Modal>
     );
@@ -232,7 +244,7 @@ export function Page(props: {
                             className="btn btn-primary"
                             onClick={(e) => {
                                 e.preventDefault();
-                                setSelectedRecordForDetails(record);
+                                setIdOfSelectedRecordForDetails(record.id);
                                 toggleDetailModal();
                             }}
                         >

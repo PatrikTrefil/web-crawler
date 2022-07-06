@@ -4,8 +4,10 @@ import { IWebsiteRecord } from "ts-types";
 export default function RecordDetails({
     recordToDisplay,
 }: {
-    recordToDisplay: IWebsiteRecord;
+    recordToDisplay: IWebsiteRecord | undefined;
 }) {
+    if (recordToDisplay === undefined)
+        return <div>No record to displayed, undefined given.</div>;
     return (
         <>
             <List type="unstyled">

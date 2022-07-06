@@ -4,20 +4,24 @@ import { updateWebsiteRecord } from "../api";
 import { isValidRegex } from "../utility";
 
 export default function EditRecord({
-    recordToEdit,
-    setRecordToEdit,
+    idOfRecordToEdit,
     records,
     setRecords,
     afterSubmit,
 }: {
-    recordToEdit: IWebsiteRecord;
-    // eslint-disable-next-line no-unused-vars
-    setRecordToEdit: (record: IWebsiteRecord) => void;
+    idOfRecordToEdit: string;
     records: IWebsiteRecord[];
     // eslint-disable-next-line no-unused-vars
     setRecords: (records: IWebsiteRecord[]) => void;
     afterSubmit: () => void;
 }) {
+    const recordToEdit = records.find(
+        (record) => record.id === idOfRecordToEdit
+    );
+    if (recordToEdit === undefined)
+        return (
+            <div>Something went wrong. Record with given id was not found.</div>
+        );
     const [url, setUrl] = useState(recordToEdit.url);
     const [label, setLabel] = useState(recordToEdit.label);
     const [boundaryRegex, setBoundaryRegex] = useState(
@@ -82,7 +86,6 @@ export default function EditRecord({
             (record) => record.id !== recordToEdit.id
         );
 
-        setRecordToEdit(editedRecord);
         setRecords([...withDeletedEditedRecord, editedRecord]);
         afterSubmit();
     };
