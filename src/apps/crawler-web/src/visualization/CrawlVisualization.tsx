@@ -10,8 +10,20 @@ import { getCrawl, getRecord } from "../api";
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { Modal, ModalHeader, ModalBody } from "reactstrap";
+import { startCrawl } from "../api";
+import { styles } from "./CytoscapeStyles";
 
 cytoscape.use(coseBilkent);
+
+interface IWebPageWithSources extends IWebPage {
+    sourceRecordIds: string[];
+}
+
+interface IDomainNodeData {
+    domain: string;
+    links: string[];
+    sourceRecordIds: string[];
+}
 
 export default function CrawlVisualization() {
     const { recordIdsString, visualizationMode } = useParams() as {
@@ -20,63 +32,25 @@ export default function CrawlVisualization() {
     };
     const recordIds = recordIdsString.split(",");
     const [crawls, setCrawls] = useState<ICrawlExecution[]>();
-    const containerRef = useRef<HTMLDivElement>(null);
+
     const [updateMode, setUpdateMode] = useState<"static" | "live">("static");
-    const [intervalId, setIntervalId] =
+    const [updateIntervalId, setIntervalId] =
         useState<ReturnType<typeof setInterval>>();
     const updateIntervalLengthInSeconds = 10;
-    const styles = [
-        {
-            selector: "node[label]",
-            style: {
-                label: "data(label)",
-                width: 30,
-                height: 30,
-            },
-        },
-        {
-            selector: "edge",
-            style: {
-                "curve-style": "bezier",
-                "control-point-step-size": 40,
-                "line-color": "#20c997",
-                "target-arrow-shape": "triangle",
-                "target-arrow-color": "#20c997",
-            },
-        },
-        {
-            selector: "node.crawlExecutionId",
-            style: {
-                "background-color": "#8232ba",
-                width: 50,
-                height: 50,
-            },
-        },
-        {
-            selector: "node.uncrawled",
-            style: {
-                backgroundColor: "#ebb842",
-            },
-        },
-        {
-            selector: "node.crawled",
-            style: {
-                backgroundColor: "#d63384",
-            },
-        },
-        {
-            selector: "node.domain",
-            style: {
-                backgroundColor: "#e37f78",
-            },
-        },
-    ];
+
+    const containerRef = useRef<HTMLDivElement>(null);
     const [cy, setCy] = useState<cytoscape.Core>();
-    const [nodeForDetails, setNodeForDetails] = useState<IWebPage>();
+
+    const [webpageForDetails, setWebpageForDetails] =
+        useState<IWebPageWithSources>();
+    const [domainDataForDetails, setDomainDataForDetails] =
+        useState<IDomainNodeData>();
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+
     const toggleDetailsModal = () => {
         setIsDetailsModalOpen(!isDetailsModalOpen);
     };
+
     useEffect(() => {
         setCy(
             cytoscape({
@@ -99,26 +73,39 @@ export default function CrawlVisualization() {
 
         layout.run();
     };
-    const nodeClickHandler = (e: cytoscape.EventObject) => {
+    const webpageNodeClickHandler = (e: cytoscape.EventObject) => {
         const node = e.target;
-        setNodeForDetails(node.data().webpage);
+        setWebpageForDetails(node.data().webpageData);
+        toggleDetailsModal();
+    };
+    const domainNodeClickHandler = (e: cytoscape.EventObject) => {
+        const node = e.target;
+        setDomainDataForDetails(node.data().domainData);
         toggleDetailsModal();
     };
     const visualizeWebsite = (cyWebsite: cytoscape.Core) => {
         if (!crawls || !cyWebsite) return;
-        cyWebsite.nodes().remove();
+        cyWebsite.nodes().remove(); // complete reset
+
         for (const crawl of crawls)
             cyWebsite.add({
                 group: "nodes",
                 data: { id: crawl.id, label: crawl.id },
                 classes: "crawlExecutionId",
             });
-        const nodesFromAllCrawls: IWebPage[] = [];
-        for (const crawl of crawls) nodesFromAllCrawls.push(...crawl.nodes);
+        const webpagesFromAllCrawls: IWebPageWithSources[] = [];
+        for (const crawl of crawls)
+            webpagesFromAllCrawls.push(
+                ...crawl.nodes.map((node) => {
+                    return { ...node, sourceRecordIds: [crawl.sourceRecordId] };
+                })
+            );
 
-        const nodesUsedForGraphing: IWebPage[] = []; // union of all nodes such that, each URL is represented by node from a crawl with the latest finish time
+        // now we merge nodes with identical URLs and we use crawled data from the latest crawl
+        const webpagesUsedForGraphing: IWebPageWithSources[] = [];
+
         // secondarily, we sort by crawlTime, descending
-        nodesFromAllCrawls.sort((a, b) => {
+        webpagesFromAllCrawls.sort((a, b) => {
             if (!a.crawlTime && b.crawlTime) return 1;
             if (a.crawlTime && !b.crawlTime) return -1;
             if (!a.crawlTime && !b.crawlTime) return 0;
@@ -131,40 +118,40 @@ export default function CrawlVisualization() {
             return 0;
         });
         // primarily, we want crawled nodes first
-        nodesFromAllCrawls.sort((a, b) => {
+        webpagesFromAllCrawls.sort((a, b) => {
             if (a.title !== undefined && b.title === undefined) return -1;
             if (a.title === undefined && b.title !== undefined) return 1;
             return 0;
         });
 
-        for (const node of nodesFromAllCrawls) {
-            const alreadyExistingNode = nodesUsedForGraphing.find(
-                (displayedNode) => displayedNode.url === node.url
+        for (const webpage of webpagesFromAllCrawls) {
+            const alreadyExistingNode = webpagesUsedForGraphing.find(
+                (displayedNode) => displayedNode.url === webpage.url
             );
-            if (!alreadyExistingNode) nodesUsedForGraphing.push(node);
+            if (alreadyExistingNode)
+                alreadyExistingNode.sourceRecordIds.push(
+                    ...webpage.sourceRecordIds
+                );
+            else webpagesUsedForGraphing.push({ ...webpage });
         }
-        for (const node of nodesUsedForGraphing) {
+
+        for (const webpage of webpagesUsedForGraphing) {
             let displayedUrl: string;
 
             const urlLengthLimit = 45;
-            if (node.url.length > urlLengthLimit)
+            if (webpage.url.length > urlLengthLimit)
                 displayedUrl =
-                    node.url.substring(0, urlLengthLimit - 1) + "...";
-            else displayedUrl = node.url;
+                    webpage.url.substring(0, urlLengthLimit - 1) + "...";
+            else displayedUrl = webpage.url;
 
-            const webpage: IWebPage = {
-                url: node.url,
-                title: node.title,
-                links: node.links,
-            };
             cyWebsite.add({
                 group: "nodes",
                 data: {
-                    id: node.url,
+                    id: webpage.url,
                     label: displayedUrl,
-                    webpage: webpage,
+                    webpageData: webpage,
                 },
-                classes: node.title ? "crawled" : "uncrawled",
+                classes: webpage.title ? "crawled" : "uncrawled",
             });
         }
         for (const crawl of crawls)
@@ -175,7 +162,7 @@ export default function CrawlVisualization() {
                     target: crawl.startURL,
                 },
             });
-        for (const node of nodesUsedForGraphing) {
+        for (const node of webpagesUsedForGraphing) {
             const setOfLinks = new Set(node.links);
             setOfLinks.forEach((link) => {
                 cyWebsite.add({
@@ -188,10 +175,16 @@ export default function CrawlVisualization() {
             });
         }
         applyLayout(cyWebsite);
-        cyWebsite.on("tap", "node", nodeClickHandler);
+        cyWebsite.on(
+            "tap",
+            "node.crawled,node.uncrawled",
+            webpageNodeClickHandler
+        );
     };
     const visualizeDomain = (cyDomain: cytoscape.Core) => {
         if (!crawls || !cyDomain) return;
+        cyDomain.nodes().remove(); // complete reset
+
         for (const crawl of crawls)
             cyDomain.add({
                 group: "nodes",
@@ -199,35 +192,52 @@ export default function CrawlVisualization() {
                 classes: "crawlExecutionId",
             });
 
-        const allDomainNodes = [];
+        const allDomainNodes: IDomainNodeData[] = [];
         for (const crawl of crawls)
             allDomainNodes.push(
                 ...crawl.nodes.map((node) => {
-                    return { ...node, domain: new URL(node.url).hostname }; // domain will potentially be "" (e.g. mailto:example@web.com)
+                    return {
+                        links: node.links,
+                        domain: new URL(node.url).hostname,
+                        sourceRecordIds: [crawl.sourceRecordId],
+                    }; // domain will potentially be "" (e.g. mailto:example@web.com)
                 })
             );
+        // now we merge nodes with the same domain
         const uniqueDomainNodes: typeof allDomainNodes = [];
         for (const node of allDomainNodes) {
+            // nodes with domain === "" are ignored
             if (node.domain !== "") {
+                // this implementation is slow but readable (use Map to improve speed if needed)
                 const domainNode = uniqueDomainNodes.find(
                     (domainNode) => domainNode.domain === node.domain
                 );
-                if (domainNode) domainNode.links.push(...node.links);
-                else uniqueDomainNodes.push(node);
+                if (domainNode) {
+                    domainNode.links.push(...node.links); // we will remove duplicates later
+                    for (const sourceRecordId of node.sourceRecordIds) {
+                        domainNode.sourceRecordIds.push(sourceRecordId); // we will remove duplicates later
+                    }
+                } else uniqueDomainNodes.push(node);
             }
         }
-        for (const node of uniqueDomainNodes) {
+        // add nodes to graph
+        for (const domainNodeData of uniqueDomainNodes) {
             let displayedDomain: string;
             const domainLengthLimit = 45;
-            if (node.domain.length > domainLengthLimit)
+            if (domainNodeData.domain.length > domainLengthLimit)
                 displayedDomain =
-                    node.domain.substring(0, domainLengthLimit - 1) + "...";
-            else displayedDomain = node.domain;
+                    domainNodeData.domain.substring(0, domainLengthLimit - 1) +
+                    "...";
+            else displayedDomain = domainNodeData.domain;
+            domainNodeData.sourceRecordIds = Array.from(
+                new Set(domainNodeData.sourceRecordIds)
+            );
             cyDomain.add({
                 group: "nodes",
                 data: {
-                    id: node.domain,
+                    id: domainNodeData.domain,
                     label: displayedDomain,
+                    domainData: domainNodeData,
                 },
                 classes: "domain",
             });
@@ -258,6 +268,7 @@ export default function CrawlVisualization() {
                 },
             });
         applyLayout(cyDomain);
+        cyDomain.on("tap", "node.domain", domainNodeClickHandler);
     };
     const getCrawls = async () => {
         const recordsPromises = [];
@@ -287,7 +298,7 @@ export default function CrawlVisualization() {
             setIntervalId(intervalId);
             return () => clearInterval(intervalId);
         } else if (updateMode === "static") {
-            if (intervalId) clearInterval(intervalId);
+            if (updateIntervalId) clearInterval(updateIntervalId);
         }
     }, [updateMode]);
     if (visualizationMode === "domain")
@@ -357,10 +368,11 @@ export default function CrawlVisualization() {
                     Node details
                 </ModalHeader>
                 <ModalBody>
-                    {nodeForDetails ? (
-                        <NodeDetails node={nodeForDetails} />
-                    ) : (
-                        <></>
+                    {visualizationMode === "domain" && (
+                        <DomainDetails domainData={domainDataForDetails} />
+                    )}
+                    {visualizationMode === "website" && (
+                        <WebpageDetails webpage={webpageForDetails} />
                     )}
                 </ModalBody>
             </Modal>
@@ -368,21 +380,85 @@ export default function CrawlVisualization() {
     );
 }
 
-function NodeDetails({ node: node }: { node: IWebPage }) {
+function DomainDetails({
+    domainData,
+}: {
+    domainData: IDomainNodeData | undefined;
+}) {
+    if (domainData === undefined)
+        return <div>No domain data selected. Something went wrong.</div>;
     return (
         <ul>
-            <li>url: {node.url}</li>
-            {node.title && <li>title: {node.title}</li>}
-            {node.links.length > 0 && (
-                <li>
-                    links:
-                    <ul>
-                        {node.links.map((link) => {
-                            return <li key={link}>{link}</li>;
-                        })}
-                    </ul>
-                </li>
-            )}
+            <li>domain: {domainData.domain}</li>
+            <li>
+                source records:
+                <ul>
+                    {domainData.sourceRecordIds.map((sourceRecordId) => (
+                        <li key={sourceRecordId}>
+                            {sourceRecordId}
+                            <button
+                                className="btn btn-success m-2"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    startCrawl(sourceRecordId);
+                                }}
+                            >
+                                Start crawl
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            </li>
+            <li>
+                links (each link listed only once):
+                <ul>
+                    {Array.from(new Set(domainData.links)).map((link) => {
+                        return <li key={link}>{link}</li>;
+                    })}
+                </ul>
+            </li>
+        </ul>
+    );
+}
+
+function WebpageDetails({
+    webpage,
+}: {
+    webpage: IWebPageWithSources | undefined;
+}) {
+    if (webpage === undefined)
+        return <div>No webpage selected. Something went wrong.</div>;
+    return (
+        <ul>
+            <li>url: {webpage.url}</li>
+            <li>
+                source records:
+                <ul>
+                    {webpage.sourceRecordIds.map((sourceRecordId) => (
+                        <li key={sourceRecordId}>
+                            {sourceRecordId}
+                            <button
+                                className="btn btn-success"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    startCrawl(sourceRecordId);
+                                }}
+                            >
+                                Start crawl
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            </li>
+            {webpage.title && <li>title: {webpage.title}</li>}
+            <li>
+                links (each link listed once):
+                <ul>
+                    {Array.from(new Set(webpage.links)).map((link) => {
+                        return <li key={link}>{link}</li>;
+                    })}
+                </ul>
+            </li>
         </ul>
     );
 }
