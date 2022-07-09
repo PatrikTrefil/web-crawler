@@ -80,6 +80,10 @@ export default class ExecutionManager implements IExecutionManager {
                 if (error0) throw error0;
                 connection.createChannel(async (error1, channel) => {
                     if (error1) throw error1;
+                    if (record === null)
+                        throw new Error(
+                            "Record for enqueued crawl was not found."
+                        );
 
                     const queue = "crawls";
                     const msg = JSON.stringify(record);
