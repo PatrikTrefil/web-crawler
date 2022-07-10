@@ -1,14 +1,91 @@
+# SET ALL REQUIRED ENV VARIABLES TO RUN THIS APP
+version: "3"
 services:
   neo4j:
-      image: neo4j:4.0.4
-      environment:
-        - NEO4J_AUTH=neo4j/password
-      expose:
-        - 7474
-        - 7687
-      ports:
-        - 7474:7474
-        - 7687:7687
+    build:
+      dockerfile: ./src/neo4j/Dockerfile
+    restart: always
+    environment:
+      - NEO4J_AUTH=${NEO4J_USER}/${NEO4J_PASS}
+    expose:
+      - 7474
+      - 7687
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "/var/lib/neo4j/bin/cypher-shell",
+          "-u",
+          "${NEO4J_USER}",
+          "-p",
+          "${NEO4J_PASS}",
+          "MATCH () RETURN count(*) as count",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 20
     # Uncomment the following lines to make the database data persistent
-    #   volumes:
-        # - ./neo4j_data:/data
+    volumes:
+      - neo4j-data:/data
+  reverse-proxy:
+    depends_on:
+      express-api:
+        condition: service_healthy
+    restart: always
+    build:
+      dockerfile: ./src/reverse-proxy/Dockerfile
+    ports:
+      - 8080:80
+  express-api:
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      work-queue:
+        condition: service_healthy
+    restart: always
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS}
+      - RABBITMQ_HOSTNAME=work-queue
+      - RABBITMQ_PORT=5672
+      - NEO4J_URL=${NEO4J_URL}
+      - NEO4J_AUTH="${NEO4J_USER}/${NEO4J_PASS}"
+      - CRAWLER_WORKER_COUNT=${CRAWLER_WORKER_COUNT}
+      - MAX_HANDLED_REQUESTS_PER_CRAWL=${MAX_HANDLED_REQUESTS_PER_CRAWL}
+    build:
+      dockerfile: ./src/apps/crawler-server/Dockerfile
+    expose:
+      - 4000
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "--fail",
+          "--silent",
+          "--connect-timeout",
+          "5",
+          "http://localhost:4000/api/records",
+        ]
+      interval: 10s
+      retries: 20
+  work-queue:
+    restart: always
+    image: rabbitmq:3-management
+    # data is saved to a volume by default
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS}
+    expose:
+      - 5672
+      - 15672
+    ports:
+      - 15672:15672 # RabbitMQ monitoring, TODO: pass through nginx
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  neo4j-data:

@@ -1,0 +1,7 @@
+# Overrides for production that are not included in the base config
+version: "3"
+
+services:
+  express-api:
+    environment:
+      NODE_ENV: production

@@ -1,0 +1,299 @@
+openapi: 3.1.0
+
+info:
+  title: "Web crawler"
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+
+paths:
+  /records:
+    get:
+      summary: Returns a list of user identifications.
+      parameters:
+        - in: query
+          name: sortBy
+          description: Name of field to sort by.
+          schema:
+            type: string
+            enum:
+              - id
+              - url
+              - periodicityInSeconds
+              - label
+        - in: query
+          name: filterByURL
+          description: URL to filter by (exact match required).
+          schema:
+            type: string
+        - in: query
+          name: filterByLabel
+          description: Label to filter by (exact match required).
+          schema:
+            type: string
+        - in: query
+          name: filterByTags
+          description: Tags to filter by (every record in the result will have ALL of the given tags).
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    description: Requested array of website record ids.
+                    items:
+                      $ref: "#/components/schemas/websiteRecord"
+  /records/create:
+    post:
+      summary: Create a new website record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/websiteRecordChange"
+      responses:
+        "201":
+          description: "Website record created"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  recordId:
+                    type: string
+                    description: ID of the new website record.
+  /records/{recordId}:
+    get:
+      summary: Returns an object describing a website record with given recordId.
+      parameters:
+        - in: path
+          name: recordId
+          required: true
+          description: Website record identification.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/websiteRecord"
+        "404":
+          description: Not found.
+    put:
+      summary: >
+        Update website record data with given request body. If active is set to true by this request, a new crawl is started as soon as possible.
+        If periodicity is set to any non-negative number by this request and the record is active,
+        a crawl is started as soon as possible and future crawls are planned.
+        If active is set to false, all future crawls are cancelled.
+      parameters:
+        - in: path
+          name: recordId
+          required: true
+          description: Website record identification.
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/websiteRecordChange"
+      responses:
+        "200":
+          description: Website record updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/websiteRecord"
+        "404":
+          description: Website record with given recordId not found.
+    delete:
+      summary: Delete website record with given recordId.
+      parameters:
+        - in: path
+          name: recordId
+          required: true
+          description: Website record identification.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Website record deleted.
+        "404":
+          description: Not found.
+  /records/{recordId}/start:
+    get:
+      summary: >
+        Start a crawl for website record with recordId. If the record is active, a normal start is performed,
+        i.e. all future crawls are cancelled, new crawl is started as soon as possible and future crawls are planned
+        if periodicity is set to a positive integer. If the record is not active, a single crawl is performed as soon
+        as possible.
+      parameters:
+        - in: path
+          name: recordId
+          required: true
+          description: Website record identification
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "202":
+          description: The crawl will start as soon as possible.
+        "404":
+          description: Not found.
+  /crawls:
+    get:
+      summary: Get a list of all crawl ids.
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                description: Array of all crawl ids.
+                items:
+                  type: string
+                  format: uuid
+  /crawls/{crawlId}:
+    get:
+      summary: Get a crawl with given crawlId
+      parameters:
+        - in: path
+          name: crawlId
+          required: true
+          description: Crawl identifier
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/crawl"
+
+components:
+  schemas:
+    websiteRecord:
+      type: object
+      required:
+        - id
+        - url
+        - boundaryRegex
+        - periodicityInSeconds
+        - label
+        - isActive
+        - tags
+        - lastExecutionId
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier of the website record.
+        url:
+          type: string
+          format: uri
+          description: URL of the webiste to crawl.
+        boundaryRegex:
+          type: string
+          description: Regular expression describing the website domain's to crawl.
+        periodicityInSeconds:
+          type: integer
+          description: Crawl periodicity in seconds (value 0 implies no automatic repetition).
+        label:
+          type: string
+          description: Human readable label of the website record (non-empty string).
+        isActive:
+          type: boolean
+          description: Boolean indication whether the website record is active.
+        tags:
+          type: array
+          description: Array of tags of the website record.
+          items:
+            type: string
+            description: Non-empty string
+            example: "books"
+        lastExecutionId:
+          type: string
+          format: uuid
+          description: Id of the last execution of the crawl described in the website record.
+    # schema for representing creation or update of a website record
+    websiteRecordChange:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          description: URL of the webiste to crawl.
+        boundaryRegex:
+          type: string
+          description: Regular expression describing the website domain's to crawl.
+        periodicityInSeconds:
+          type: integer
+          description: Crawl periodicity in seconds (setting this to 0 implies no automatic repetition).
+        label:
+          type: string
+          description: Human readable label of the website record (non-empty string).
+        isActive:
+          type: boolean
+          description: Boolean indication whether the website record is active.
+        tags:
+          type: array
+          description: Array of tags of the website record.
+          items:
+            type: string
+            description: Non-empty string
+            example: "books"
+        lastExecutionURL:
+          type: string
+          description: URL of the last execution of the crawl described in the website record.
+    crawl:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        startURL:
+          type: string
+        nodes:
+          type: array
+          items:
+            type: object
+            required:
+              - url
+              - links
+            properties:
+              url:
+                type: string
+              title:
+                type: string
+              crawlTime:
+                type: string
+                format: date-time
+              links:
+                type: array
+                items:
+                  type: string
+                  format: uri
+                  description: URL of target node.
+              sourceRecordId:
+                type: string
+                format: uuid
+                description: ID of the record on which this crawl was based.

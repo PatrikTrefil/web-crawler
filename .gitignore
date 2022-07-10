@@ -1,11 +1,14 @@
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
 # Tmp data
-neo4j_data/
+apify_storage/
+
+# Parcel cache
+.parcel-cache/
 
 # compiled output
-dist/**
-build/**
+dist/
+build/
 /tmp
 /out-tsc
 

@@ -1,0 +1,16 @@
+header {
+    width: 100vw;
+    padding: 3%;
+    height: 15vh;
+}
+
+.deco-none,
+.deco-none:link,
+.deco-none:hover {
+    color: inherit;
+    text-decoration: inherit;
+}
+
+main {
+    padding: 5% 15%;
+}
