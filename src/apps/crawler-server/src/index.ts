@@ -1,4 +1,4 @@
-import graphqlMiddleware from "./graphql";
+import getGraphQlMiddleware from "./graphql";
 import express, { NextFunction, Request, Response } from "express";
 import { body, check, validationResult, query } from "express-validator";
 import ExecutionManager from "./executionManager";
@@ -17,7 +17,7 @@ const executionManager = new ExecutionManager(
 );
 executionManager.startExecutionsForAllActiveRecords();
 
-app.use("/graphql", graphqlMiddleware);
+app.use("/graphql", getGraphQlMiddleware(model));
 
 if (process.env.NODE_ENV === "production") {
     // disable logging
