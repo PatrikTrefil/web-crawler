@@ -50,12 +50,16 @@ class Executor {
                                 stringRecord
                             );
                             const record = JSON.parse(msg.content.toString());
-                            const crawlExecution = await this.crawl(record);
+                            let crawlExecution;
+                            try {
+                                crawlExecution = await this.crawl(record);
+                            } finally {
+                                // even if the crawl failed, we consume the msg
+                                channel.ack(msg);
+                            }
                             worker_threads.parentPort.postMessage(
                                 crawlExecution
                             );
-                            // if the record is not active, just consume the message
-                            channel.ack(msg);
                         },
                         {
                             noAck: false,
@@ -71,8 +75,6 @@ class Executor {
             url: record.url,
             links: [],
         };
-        const maxHandledRequest = process.env.MAX_HANDLED_REQUESTS_PER_CRAWL;
-        let hasCrawlFailed = false;
         const requestQueue = await Apify.openRequestQueue(
             // every thread needs its own queue
             // we add queueCounter to the name, because we otherwise get an error: "Database connection is not open" (might be intentional or a bug)
@@ -103,15 +105,10 @@ class Executor {
             for (const url of absoluteUrls)
                 if (boundaryRegex.test(url)) {
                     console.log("Enque: " + url);
-                    const { handledRequestCount } =
-                        await requestQueue.getInfo();
-                    if (handledRequestCount >= maxHandledRequest)
-                        hasCrawlFailed = true;
-                    else
-                        await requestQueue.addRequest({
-                            url: url,
-                            userData: { fromWebPageURL: request.url },
-                        });
+                    await requestQueue.addRequest({
+                        url: url,
+                        userData: { fromWebPageURL: request.url },
+                    });
                 } else {
                     // make note of link going out of bounds (without crawled data)
                     crawlExecution.links.push({
@@ -123,14 +120,13 @@ class Executor {
         };
 
         const crawler = new Apify.CheerioCrawler({
-            maxRequestsPerCrawl: 20,
+            maxRequestsPerCrawl: process.env.MAX_HANDLED_REQUESTS_PER_CRAWL,
             requestQueue,
             handlePageFunction,
         });
 
         await crawler.run();
         requestQueue.drop();
-        if (hasCrawlFailed) return null;
         return crawlExecution;
     }
 }
