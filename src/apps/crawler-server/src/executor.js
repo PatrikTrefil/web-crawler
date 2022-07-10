@@ -120,7 +120,9 @@ class Executor {
         };
 
         const crawler = new Apify.CheerioCrawler({
-            maxRequestsPerCrawl: process.env.MAX_HANDLED_REQUESTS_PER_CRAWL,
+            maxRequestsPerCrawl: parseInt(
+                process.env.MAX_HANDLED_REQUESTS_PER_CRAWL
+            ),
             requestQueue,
             handlePageFunction,
         });
