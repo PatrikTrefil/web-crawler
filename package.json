@@ -41,7 +41,7 @@
   "homepage": "https://github.com/PatrikTrefil/web-crawler#readme",
   "devDependencies": {
     "prettier": "^2.6.0",
-    "turbo": "^1.2.8"
+    "turbo": "^1.1.9"
   },
   "workspaces": [
     "src/packages/*",
