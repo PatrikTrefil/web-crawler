@@ -16,8 +16,10 @@ function makeGraphQLRecord(record: IWebsiteRecord) {
         ...record,
         identifier: record.id,
         regexp: record.boundaryRegex,
+        active: record.isActive,
         id: undefined,
         boundaryRegex: undefined,
+        isActive: undefined,
     };
 }
 type GraphQLRecord = ReturnType<typeof makeGraphQLRecord>;
