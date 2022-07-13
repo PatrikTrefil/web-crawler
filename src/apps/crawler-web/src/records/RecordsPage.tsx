@@ -27,6 +27,7 @@ function RecordsPage() {
         lastTimeOfCrawl: SortRecordFunction;
     } = {
         url: (a: IWebsiteRecord, b: IWebsiteRecord) => {
+            console.trace();
             if (a.url < b.url) return -1;
             else if (a.url > b.url) return 1;
             return 0;
@@ -59,7 +60,7 @@ function RecordsPage() {
         },
     };
     const [sortFunction, setSortFunction] = useState<SortRecordFunction>(
-        sortFunctions["url"]
+        () => sortFunctions["url"] // will actually set the returning value to sortFunction
     );
     const [isLoadingRecords, setIsLoadingRecords] = useState(true);
 
