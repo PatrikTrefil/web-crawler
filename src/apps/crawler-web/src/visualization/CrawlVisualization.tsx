@@ -136,19 +136,22 @@ export default function CrawlVisualization() {
         }
 
         for (const webpage of webpagesUsedForGraphing) {
-            let displayedUrl: string;
-
-            const urlLengthLimit = 45;
-            if (webpage.url.length > urlLengthLimit)
-                displayedUrl =
-                    webpage.url.substring(0, urlLengthLimit - 1) + "...";
-            else displayedUrl = webpage.url;
+            let displayedLabel: string;
+            if (webpage.title) {
+                displayedLabel = webpage.title;
+            } else {
+                const urlLengthLimit = 45;
+                if (webpage.url.length > urlLengthLimit)
+                    displayedLabel =
+                        webpage.url.substring(0, urlLengthLimit - 1) + "...";
+                else displayedLabel = webpage.url;
+            }
 
             cyWebsite.add({
                 group: "nodes",
                 data: {
                     id: webpage.url,
-                    label: displayedUrl,
+                    label: displayedLabel,
                     webpageData: webpage,
                 },
                 classes: webpage.title ? "crawled" : "uncrawled",
