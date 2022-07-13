@@ -92,7 +92,7 @@ paths:
                 $ref: "#/components/schemas/websiteRecord"
         "404":
           description: Not found.
-    put:
+    patch:
       summary: >
         Update website record data with given request body. If active is set to true by this request, a new crawl is started as soon as possible.
         If periodicity is set to any non-negative number by this request and the record is active,

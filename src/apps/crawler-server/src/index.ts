@@ -164,7 +164,7 @@ api.post(
     }
 );
 
-api.put(
+api.patch(
     "/records/:recordId([0-9a-zA-Z-]+)",
     express.json(),
     body("url").optional().isURL(),

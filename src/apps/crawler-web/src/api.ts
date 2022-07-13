@@ -64,7 +64,7 @@ export async function updateWebsiteRecord(
     recordUpdate: IWebsiteRecordUpdate
 ): Promise<IWebsiteRecord> {
     const response = await fetch(apiUrl + `/records/${recordId}`, {
-        method: "PUT",
+        method: "PATCH",
         headers: {
             "Content-Type": "application/json",
         },
