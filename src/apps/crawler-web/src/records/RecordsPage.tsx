@@ -7,18 +7,60 @@ import { Modal, ModalHeader, ModalBody, Collapse } from "reactstrap";
 import { RecordList } from "./RecordList";
 import { Filter } from "./FilterRecords";
 import { CreateWebsiteRecordForm } from "./CreateRecord";
-import { IWebsiteRecord } from "ts-types";
+import { ICrawlExecution, IWebsiteRecord } from "ts-types";
 import SortSelect from "./SortRecords";
+
+export type SortRecordFunction = (
+    // eslint-disable-next-line no-unused-vars
+    a: IWebsiteRecord & { lastExecution: ICrawlExecution | null },
+    // eslint-disable-next-line no-unused-vars
+    b: IWebsiteRecord & { lastExecution: ICrawlExecution | null }
+) => number;
 
 function RecordsPage() {
     const [records, setRecords] = useState<Array<IWebsiteRecord>>([]);
     const [filteredRecords, setFilteredRecords] = useState<
         Array<IWebsiteRecord>
     >([]);
-    const [sortFunction, setSortFunction] = useState<
-        // eslint-disable-next-line no-unused-vars
-        ((a: IWebsiteRecord, b: IWebsiteRecord) => number) | undefined
-    >();
+    const sortFunctions: {
+        url: SortRecordFunction;
+        lastTimeOfCrawl: SortRecordFunction;
+    } = {
+        url: (a: IWebsiteRecord, b: IWebsiteRecord) => {
+            if (a.url < b.url) return -1;
+            else if (a.url > b.url) return 1;
+            return 0;
+        },
+        lastTimeOfCrawl: (
+            a: IWebsiteRecord & { lastExecution: ICrawlExecution | null },
+            b: IWebsiteRecord & { lastExecution: ICrawlExecution | null }
+        ) => {
+            if (a.lastExecution === null) {
+                if (b.lastExecution === null) return 0;
+                return 1;
+            } else {
+                if (b.lastExecution === null) return -1;
+                const aEndOfExecution = Math.max(
+                    ...a.lastExecution.nodes.map(
+                        (node) => node.crawlTime?.getTime() ?? 0
+                    )
+                );
+                const bEndOfExecution = Math.max(
+                    ...b.lastExecution.nodes.map(
+                        (node) => node.crawlTime?.getTime() ?? 0
+                    )
+                );
+                console.log("a end:", aEndOfExecution);
+                console.log("b end:", bEndOfExecution);
+                if (aEndOfExecution < bEndOfExecution) return 1;
+                else if (aEndOfExecution > bEndOfExecution) return -1;
+                return 0;
+            }
+        },
+    };
+    const [sortFunction, setSortFunction] = useState<SortRecordFunction>(
+        sortFunctions["url"]
+    );
     const [isLoadingRecords, setIsLoadingRecords] = useState(true);
 
     const [errorMsgRecordLoading, setErrorMsgRecordLoading] = useState(""); // empty string => no errors
@@ -82,7 +124,10 @@ function RecordsPage() {
             >
                 Filters
             </button>
-            <SortSelect setSortFunction={setSortFunction} />
+            <SortSelect
+                setSortFunction={setSortFunction}
+                sortFunctions={sortFunctions}
+            />
             <Collapse isOpen={filterCollapseIsOpen}>
                 <Filter
                     records={records}

@@ -1,33 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { IWebsiteRecord } from "ts-types";
+import { SortRecordFunction } from "./RecordsPage";
 
 export default function SortSelect({
     setSortFunction,
+    sortFunctions,
 }: {
-    setSortFunction: React.Dispatch<
-        React.SetStateAction<
-            // eslint-disable-next-line no-unused-vars
-            ((a: IWebsiteRecord, b: IWebsiteRecord) => number) | undefined
-        >
-    >;
-}) {
-    const [sortByFormFieldValue, setSortByFormFieldValue] = useState("url");
-    const sortFunctions: {
-        // eslint-disable-next-line no-unused-vars
-        [key: string]: (a: IWebsiteRecord, b: IWebsiteRecord) => number;
-    } = {
-        url: (a: IWebsiteRecord, b: IWebsiteRecord) => {
-            if (a.url < b.url) return -1;
-            else if (a.url > b.url) return 1;
-            return 0;
-        },
-        lastTimeOfCrawl: (a: IWebsiteRecord, b: IWebsiteRecord) => {
-            // HACK: sort by last time of crawl
-            if (a.url < b.url) return 1;
-            else if (a.url > b.url) return -1;
-            return 0;
-        },
+    setSortFunction: React.Dispatch<React.SetStateAction<SortRecordFunction>>;
+    sortFunctions: {
+        url: SortRecordFunction;
+        lastTimeOfCrawl: SortRecordFunction;
     };
+}) {
+    const [sortByFormFieldValue, setSortByFormFieldValue] = useState<
+        "url" | "lastTimeOfCrawl"
+    >("url");
 
     useEffect(() => {
         setSortFunction(() => sortFunctions[sortByFormFieldValue]);
@@ -40,7 +26,11 @@ export default function SortSelect({
             </label>
             <select
                 value={sortByFormFieldValue}
-                onChange={(e) => setSortByFormFieldValue(e.target.value)}
+                onChange={(e) =>
+                    setSortByFormFieldValue(
+                        e.target.value as "url" | "lastTimeOfCrawl"
+                    )
+                }
                 name="sort"
                 id="sort"
                 className="form-select mb-3"

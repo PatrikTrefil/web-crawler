@@ -1,13 +1,14 @@
 import "./RecordList.css";
 
 import { useState, useEffect } from "react";
-import { deleteWebsiteRecord, startCrawl } from "../api";
+import { deleteWebsiteRecord, getCrawl, startCrawl } from "../api";
 import ReactPaginate from "react-paginate";
-import { IWebsiteRecord } from "ts-types";
+import { ICrawlExecution, IWebsiteRecord } from "ts-types";
 import { Modal, ModalHeader, ModalBody, Tooltip } from "reactstrap";
 import EditRecord from "./EditRecord";
 import RecordDetails from "./RecordDetails";
 import { Link } from "react-router-dom";
+import { SortRecordFunction } from "./RecordsPage";
 
 export function RecordList({
     itemsPerPage,
@@ -26,8 +27,7 @@ export function RecordList({
     error: string;
     // eslint-disable-next-line no-unused-vars
     showErrorMessage: (message: string) => void;
-    sortFunction: // eslint-disable-next-line no-unused-vars
-    ((a: IWebsiteRecord, b: IWebsiteRecord) => number) | undefined;
+    sortFunction: SortRecordFunction;
 }) {
     const [currentlyDisplayedRecordIds, setCurrentlyDisplayedRecordIds] =
         useState<string[]>([]);
@@ -55,12 +55,33 @@ export function RecordList({
     }, [pageCount]);
     // recompute displayed records if anything changes
     useEffect(() => {
-        const endOffset = itemOffset + itemsPerPage;
-        const recordsCopy = [...records];
-        recordsCopy.sort(sortFunction);
-        setCurrentlyDisplayedRecordIds(
-            recordsCopy.slice(itemOffset, endOffset).map((record) => record.id)
-        );
+        const resort = async () => {
+            const endOffset = itemOffset + itemsPerPage;
+            const recordsCopy = [...records];
+            const lastExecutionPromises: Promise<ICrawlExecution | null>[] =
+                recordsCopy
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    .map((record) => {
+                        if (record.lastExecutionId !== null)
+                            return getCrawl(record.lastExecutionId);
+                        else
+                            return new Promise((resolve) => {
+                                resolve(null);
+                            });
+                    });
+
+            const lastExecutions = await Promise.all(lastExecutionPromises);
+            const recordsWithLastExecution = recordsCopy.map((record, i) => {
+                return { ...record, lastExecution: lastExecutions[i] };
+            });
+            recordsWithLastExecution.sort(sortFunction);
+            setCurrentlyDisplayedRecordIds(
+                recordsWithLastExecution
+                    .slice(itemOffset, endOffset)
+                    .map((record) => record.id)
+            );
+        };
+        resort();
     }, [records, isLoading, itemOffset, itemsPerPage, sortFunction]);
 
     const handlePageClick = (selectedItem: { selected: number }) => {
