@@ -61,7 +61,10 @@ export default function getGraphQLMiddleware(model: IModel) {
             crawlTime: { type: GraphQLString },
             links: {
                 type: GraphQLNonNull(GraphQLList(GraphQLNonNull(NodeType))),
-                resolve: async (parent) => {
+                resolve: async (parent: {
+                    url: string;
+                    owner: { identifier: string };
+                }) => {
                     const record = await model.getRecordById(
                         parent.owner.identifier
                     );
@@ -115,7 +118,8 @@ export default function getGraphQLMiddleware(model: IModel) {
             nodes: {
                 type: GraphQLList(NodeType),
                 args: { webPages: { type: GraphQLList(GraphQLString) } },
-                resolve: async (_, params: { webPages: string[] }) => {
+                // _ indicates it is not being used
+                resolve: async (_: unknown, params: { webPages: string[] }) => {
                     const crawlIds = await model.getExecutionIds();
 
                     const promises = [];
