@@ -67,11 +67,8 @@ export default class Model implements IModel {
                 }
                 return record;
             });
-        } catch (e) {
-            session.close();
-            throw e;
         } finally {
-            session.close();
+            await session.close();
         }
         return websiteRecord;
     }
@@ -107,11 +104,8 @@ export default class Model implements IModel {
                 params
             );
             createdRecordId = result.records[0].get(0);
-        } catch (e) {
-            session.close();
-            throw e;
         } finally {
-            session.close();
+            await session.close();
         }
         return createdRecordId;
     }
@@ -195,11 +189,8 @@ export default class Model implements IModel {
             } else {
                 updatedRecord = null;
             }
-        } catch (e) {
-            session.close();
-            throw e;
         } finally {
-            session.close();
+            await session.close();
         }
         return updatedRecord;
     }
@@ -224,11 +215,8 @@ export default class Model implements IModel {
             );
             nodesDeletedCount =
                 result.summary.counters.updates()["nodesDeleted"];
-        } catch (e) {
-            session.close();
-            throw e;
         } finally {
-            session.close();
+            await session.close();
         }
         return nodesDeletedCount === 1;
     }
@@ -240,11 +228,8 @@ export default class Model implements IModel {
                 "MATCH (record:Record) RETURN record.id"
             );
             recordIds = result.records.map((record) => record.get("record.id"));
-        } catch (e) {
-            session.close();
-            throw e;
         } finally {
-            session.close();
+            await session.close();
         }
         return recordIds;
     }
@@ -260,11 +245,8 @@ export default class Model implements IModel {
             executionIds = result.records.map((record) =>
                 record.get("execution.id")
             );
-        } catch (e) {
-            session.close();
-            throw e;
         } finally {
-            session.close();
+            await session.close();
         }
         return executionIds;
     }
@@ -322,11 +304,8 @@ export default class Model implements IModel {
                     else throw "websiteRecordId not found";
                 }
             );
-        } catch (e) {
-            session.close();
-            throw e;
         } finally {
-            session.close();
+            await session.close();
         }
         return createdExecutionLinkId;
     }
@@ -372,11 +351,8 @@ export default class Model implements IModel {
                     return result.records[0].get("e.id");
                 else throw "Failed";
             });
-        } catch (e) {
-            session.close();
-            throw e;
         } finally {
-            session.close();
+            await session.close();
         }
         return createdLinkId;
     }
@@ -420,11 +396,8 @@ export default class Model implements IModel {
                     ] > 0
                 );
             });
-        } catch (e) {
-            session.close();
-            throw e;
         } finally {
-            session.close();
+            await session.close();
         }
         return success;
     }
@@ -442,7 +415,7 @@ export default class Model implements IModel {
             );
             // no link of type Execution with crawlExecutionId was found
             if (startURLAndSourceRecordResult.records.length === 0) {
-                session.close();
+                await session.close();
                 return null;
             }
             // there might be multiple links going to the same webpage, but only one link (from one execution) contains the crawled data
@@ -525,11 +498,8 @@ export default class Model implements IModel {
                 sourceRecordId:
                     startURLAndSourceRecordResult.records[0].get("record.id"),
             };
-        } catch (e) {
-            session.close();
-            throw e;
         } finally {
-            session.close();
+            await session.close();
         }
         return execution;
     }
