@@ -13,13 +13,12 @@ import IModel from "./IModel";
 
 function makeGraphQLRecord(record: IWebsiteRecord) {
     return {
-        ...record,
         identifier: record.id,
+        label: record.label,
+        url: record.url,
         regexp: record.boundaryRegex,
+        tags: record.tags,
         active: record.isActive,
-        id: undefined,
-        boundaryRegex: undefined,
-        isActive: undefined,
     };
 }
 type GraphQLRecord = ReturnType<typeof makeGraphQLRecord>;
@@ -29,9 +28,11 @@ function turnExecutionNodeIntoGraphQLNode(
     ownerRecord: GraphQLRecord
 ) {
     return {
-        ...node,
-        owner: ownerRecord,
+        title: node.title,
+        url: node.url,
         crawlTime: node.crawlTime?.toISOString(),
+        links: node.links,
+        owner: ownerRecord,
     };
 }
 
