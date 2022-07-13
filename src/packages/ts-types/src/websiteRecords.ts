@@ -8,7 +8,7 @@ export interface IWebsiteRecord {
     label: string;
     isActive: boolean;
     tags: string[];
-    lastExecutionId: string;
+    lastExecutionId: string | null;
 }
 
 export interface IWebsiteRecordUpdate {
