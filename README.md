@@ -1,6 +1,6 @@
 # Web Crawler - NSWI142
 
-This is a repository for a team semestral work for the subject _Advanced Technologies for Web Applications_ (NSWI153).
+This is a repository for a semestral work for the subject _Advanced Technologies for Web Applications_ (NSWI153).
 
 You can find the assignment details and the documentation in our Github Wiki.
 
